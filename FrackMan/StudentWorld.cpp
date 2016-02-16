@@ -13,7 +13,7 @@ int StudentWorld::init()
 	{
 		for(int j = 0; j < VIEW_HEIGHT-4; j++)
 		{
-			if(i >= 30 && i <= 33 && j > 4)
+			if(i >= 30 && i <= 33 && j >= 4)
 			{
 				dirt[i][j] = nullptr;
 			}
@@ -48,17 +48,22 @@ void StudentWorld::cleanUp()
 
 void StudentWorld::destroyDirt(int startX, int startY, int endX, int endY)
 {
+	bool dirtDeleted = false;
 	for(int i = startX; i <= endX; i++)
 	{
 		for(int j = startY; j <= endY; j++)
 		{
 			if(j <= 59)
 			{
+				if(dirt[i][j] != nullptr)
+					dirtDeleted = true;
 				delete dirt[i][j];
 				dirt[i][j] = nullptr;
 			}
 		}
 	}
+	if(dirtDeleted)
+		playSound(SOUND_DIG);
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
