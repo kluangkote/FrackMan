@@ -11,31 +11,51 @@ void FrackMan::doSomething()
   if (getWorld()->getKey(ch) == true) {
     switch(ch){
       case KEY_PRESS_LEFT:
-        if(getX() > 0)
+        if(getDirection() != left)
+          setDirection(left);
+        else
         {
-          moveTo(getX()-1, getY());
-          getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+          if(getX() > 0)
+          {
+            moveTo(getX()-1, getY());
+            getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+          }
         }
         break;
       case KEY_PRESS_RIGHT:
-        if(getX() < 60)
-        {
-          moveTo(getX()+1, getY());
-          getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
-        }
+        if(getDirection() != right)
+          setDirection(right);
+          else
+          {
+            if(getX() < 60)
+            {
+              moveTo(getX()+1, getY());
+              getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+            }
+          }
         break;
       case KEY_PRESS_UP:
-        if(getY() < 60)
+        if(getDirection() != up)
+          setDirection(up);
+        else
         {
-          moveTo(getX(), getY()+1);
-          getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+          if(getY() < 60)
+          {
+            moveTo(getX(), getY()+1);
+            getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+          }
         }
         break;
       case KEY_PRESS_DOWN:
-        if(getY() > 0)
+        if(getDirection() != down)
+          setDirection(down);
+        else
         {
-          moveTo(getX(), getY()-1);
-          getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+          if(getY() > 0)
+          {
+            moveTo(getX(), getY()-1);
+            getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
+          }
         }
         break;
     }
