@@ -34,6 +34,18 @@ int StudentWorld::move()
 	return GWSTATUS_CONTINUE_GAME;
 }
 
+void StudentWorld::cleanUp()
+{
+	delete player;
+	for(int i = 0; i < VIEW_WIDTH; i++)
+	{
+		for(int j = 0; j < VIEW_HEIGHT-4; j++)
+		{
+			delete dirt[i][j];
+		}
+	}
+}
+
 void StudentWorld::destroyDirt(int startX, int startY, int endX, int endY)
 {
 	for(int i = startX; i <= endX; i++)

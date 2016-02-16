@@ -18,13 +18,16 @@ public:
 		amtOfDirt = 0;
 	}
 
+	virtual ~StudentWorld()
+	{
+		cleanUp();
+	}
+
 	virtual int init();
 
 	virtual int move();
 
-	virtual void cleanUp()
-	{
-	}
+	virtual void cleanUp();
 
 	void destroyDirt(int startX, int startY, int endX, int endY);
 
