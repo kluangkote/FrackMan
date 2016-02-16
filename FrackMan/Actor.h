@@ -2,6 +2,7 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
+class StudentWorld;
 
 class Actor : public GraphObject
 {
@@ -29,6 +30,21 @@ public:
   {
   }
   virtual void doSomething();
+};
+
+class FrackMan : public Actor
+{
+public:
+  FrackMan(StudentWorld* world) : Actor(IID_PLAYER, 30, 60, right, 1.0, 0)
+  {
+    myWorld = world;
+  }
+  virtual ~FrackMan()
+  {
+  }
+  void doSomething();
+private:
+  StudentWorld* myWorld;
 };
 
 #endif // ACTOR_H_
