@@ -5,7 +5,8 @@
 #include "GameConstants.h"
 #include "Actor.h"
 #include <string>
-
+#include <iostream>
+using namespace std;
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
 class StudentWorld : public GameWorld
@@ -25,8 +26,10 @@ public:
 	{
 	}
 
+	void destroyDirt(int startX, int startY, int endX, int endY);
+
 private:
-	Dirt* dirt[VIEW_HEIGHT-4][VIEW_HEIGHT];
+	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];
 	int amtOfDirt;
 	FrackMan* player;
 };

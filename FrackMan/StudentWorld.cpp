@@ -9,17 +9,17 @@ GameWorld* createStudentWorld(string assetDir)
 
 int StudentWorld::init()
 {
-	for(int i = 0; i < VIEW_HEIGHT-4; i++)
+	for(int i = 0; i < VIEW_WIDTH; i++)
 	{
-		for(int j = 0; j < VIEW_WIDTH; j++)
+		for(int j = 0; j < VIEW_HEIGHT-4; j++)
 		{
-			if(j >= 30 && j <= 33 && i > 4)
+			if(i >= 30 && i <= 33 && j > 4)
 			{
 				dirt[i][j] = nullptr;
 			}
 			else
 			{
-				dirt[i][j] = new Dirt(j, i);
+				dirt[i][j] = new Dirt(i, j);
 				amtOfDirt++;
 			}
 		}
@@ -32,6 +32,21 @@ int StudentWorld::move()
 {
 	player->doSomething();
 	return GWSTATUS_CONTINUE_GAME;
+}
+
+void StudentWorld::destroyDirt(int startX, int startY, int endX, int endY)
+{
+	for(int i = startX; i <= endX; i++)
+	{
+		for(int j = startY; j <= endY; j++)
+		{
+			if(j <= 59)
+			{
+				delete dirt[i][j];
+				dirt[i][j] = nullptr;
+			}
+		}
+	}
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
