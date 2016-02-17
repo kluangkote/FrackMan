@@ -20,6 +20,8 @@ void FrackMan::doSomething()
             moveTo(getX()-1, getY());
             getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
           }
+          else
+            moveTo(getX(), getY());
         }
         break;
       case KEY_PRESS_RIGHT:
@@ -32,6 +34,8 @@ void FrackMan::doSomething()
               moveTo(getX()+1, getY());
               getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
             }
+            else
+              moveTo(getX(), getY());
           }
         break;
       case KEY_PRESS_UP:
@@ -44,6 +48,8 @@ void FrackMan::doSomething()
             moveTo(getX(), getY()+1);
             getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
           }
+          else
+            moveTo(getX(), getY());
         }
         break;
       case KEY_PRESS_DOWN:
@@ -56,6 +62,8 @@ void FrackMan::doSomething()
             moveTo(getX(), getY()-1);
             getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3);
           }
+          else
+            moveTo(getX(), getY());
         }
         break;
     }
