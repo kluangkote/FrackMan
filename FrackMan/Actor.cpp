@@ -12,7 +12,7 @@ void FrackMan::doSomething()
         setDirection(left);
       else
       {
-        if(getWorld()->touchingBoulder(getX()-1, getY()))
+        if(getWorld()->touchingBoulder(getX()-1, getY(), 3.9))
           return;
         if(getX() > 0)
         {
@@ -28,7 +28,7 @@ void FrackMan::doSomething()
         setDirection(right);
       else
       {
-        if(getWorld()->touchingBoulder(getX()+1, getY()))
+        if(getWorld()->touchingBoulder(getX()+1, getY(), 3.9))
           return;
         if(getX() < 60)
         {
@@ -44,7 +44,7 @@ void FrackMan::doSomething()
         setDirection(up);
       else
       {
-        if(getWorld()->touchingBoulder(getX(), getY()+1))
+        if(getWorld()->touchingBoulder(getX(), getY()+1, 3.9))
           return;
         if(getY() < 60)
         {
@@ -60,7 +60,7 @@ void FrackMan::doSomething()
         setDirection(down);
       else
       {
-        if(getWorld()->touchingBoulder(getX(), getY()-1))
+        if(getWorld()->touchingBoulder(getX(), getY()-1, 3.9))
           return;
         if(getY() > 0)
         {

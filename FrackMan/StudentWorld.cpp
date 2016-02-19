@@ -109,66 +109,42 @@ bool StudentWorld::canMove(int x, int y, GraphObject::Direction dir)
 {
 	if(dir == GraphObject::down)
 	{
-		for(int i = 0; i < actors.size(); i++)
-		{
-			if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 3)
-			{
-				if(actors[i]->getX() != x || actors[i]->getY() != y)
-					return false;
-			}
-		}
+		if(touchingBoulder(x, y, 3))
+			return false;
 		if(y > 0 && dirt[x][y-1] == nullptr && dirt[x+1][y-1] == nullptr && dirt[x+2][y-1] == nullptr && dirt[x+3][y-1] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::up)
 	{
-		for(int i = 0; i < actors.size(); i++)
-		{
-			if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 3)
-			{
-				if(actors[i]->getX() != x || actors[i]->getY() != y)
-					return false;
-			}
-		}
+		if(touchingBoulder(x, y, 3))
+			return false;
 		if(y < 63 && dirt[x][y+1] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+1] == nullptr && dirt[x+3][y+1] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::left)
 	{
-		for(int i = 0; i < actors.size(); i++)
-		{
-			if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 3)
-			{
-				if(actors[i]->getX() != x || actors[i]->getY() != y)
-					return false;
-			}
-		}
+		if(touchingBoulder(x, y, 3))
+			return false;
 		if(x > 0 && dirt[x-1][y] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+2] == nullptr && dirt[x+3][y+3] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::right)
 	{
-		for(int i = 0; i < actors.size(); i++)
-		{
-			if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 3)
-			{
-				if(actors[i]->getX() != x || actors[i]->getY() != y)
-					return false;
-			}
-		}
+		if(touchingBoulder(x, y, 3))
+			return false;
 		if(x < 63 && dirt[x+1][y] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+2] == nullptr && dirt[x+3][y+3] == nullptr)
 			return true;
 	}
 	return false;
 }
 
-bool StudentWorld::touchingBoulder(int x, int y)
+bool StudentWorld::touchingBoulder(int x, int y, double radiusLimit)
 {
 	for(int i = 0; i < actors.size(); i++)
 	{
-		if(!actors[i]->canShareSpace())
+		if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= radiusLimit)
 		{
-			if(getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 3.9)
+			if(actors[i]->getX() != x || actors[i]->getY() != y)
 				return true;
 		}
 	}

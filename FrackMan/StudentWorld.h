@@ -42,7 +42,7 @@ public:
 
 	double getRadius(int x, int y, int otherX, int otherY);
 
-	bool touchingBoulder(int x, int y);
+	bool touchingBoulder(int x, int y, double radiusLimit);
 
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];
