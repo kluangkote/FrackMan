@@ -9,12 +9,13 @@ class StudentWorld;
 class Actor : public GraphObject
 {
 public:
-  Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0)
+  Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0, bool s = true)
   : GraphObject(imageID, startX, startY, dir, size, depth)
   {
     myWorld = world;
     setVisible(true);
     isAlive = true;
+    share = s;
   }
 
   virtual ~Actor()
@@ -41,9 +42,15 @@ public:
   {
     return myWorld;
   }
+
+  bool canShareSpace()
+  {
+    return share;
+  }
 private:
   StudentWorld* myWorld;
   bool isAlive;
+  bool share;
 };
 
 class Dirt : public Actor
@@ -75,7 +82,7 @@ public:
 class Boulder : public Actor
 {
 public:
-  Boulder(int x, int y, StudentWorld* world) : Actor(IID_BOULDER, x, y, world, down, 1.0, 1)
+  Boulder(int x, int y, StudentWorld* world) : Actor(IID_BOULDER, x, y, world, down, 1.0, 1, false)
   {
     state = "stable";
     countTicks = 0;

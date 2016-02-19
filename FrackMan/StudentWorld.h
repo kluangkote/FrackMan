@@ -38,7 +38,11 @@ public:
 
 	void destroyDirt(int startX, int startY, int endX, int endY, bool isFrack);
 
-	Dirt* getDirt(int x, int y);
+	bool canMove(int x, int y, GraphObject::Direction dir);
+
+	double getRadius(int x, int y, int otherX, int otherY);
+
+	bool touchingBoulder(int x, int y);
 
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];

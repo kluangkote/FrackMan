@@ -12,6 +12,8 @@ void FrackMan::doSomething()
         setDirection(left);
       else
       {
+        if(getWorld()->touchingBoulder(getX()-1, getY()))
+          return;
         if(getX() > 0)
         {
           moveTo(getX()-1, getY());
@@ -23,9 +25,11 @@ void FrackMan::doSomething()
       break;
       case KEY_PRESS_RIGHT:
       if(getDirection() != right)
-      setDirection(right);
+        setDirection(right);
       else
       {
+        if(getWorld()->touchingBoulder(getX()+1, getY()))
+          return;
         if(getX() < 60)
         {
           moveTo(getX()+1, getY());
@@ -37,9 +41,11 @@ void FrackMan::doSomething()
       break;
       case KEY_PRESS_UP:
       if(getDirection() != up)
-      setDirection(up);
+        setDirection(up);
       else
       {
+        if(getWorld()->touchingBoulder(getX(), getY()+1))
+          return;
         if(getY() < 60)
         {
           moveTo(getX(), getY()+1);
@@ -51,9 +57,11 @@ void FrackMan::doSomething()
       break;
       case KEY_PRESS_DOWN:
       if(getDirection() != down)
-      setDirection(down);
+        setDirection(down);
       else
       {
+        if(getWorld()->touchingBoulder(getX(), getY()-1))
+          return;
         if(getY() > 0)
         {
           moveTo(getX(), getY()-1);
@@ -73,11 +81,7 @@ void Boulder::doSomething()
   StudentWorld* myWorld = getWorld();
   if(state == "stable")
   {
-    Dirt* dirt1 = myWorld->getDirt(getX(), getY()-1);
-    Dirt* dirt2 = myWorld->getDirt(getX()+1, getY()-1);
-    Dirt* dirt3 = myWorld->getDirt(getX()+2, getY()-1);
-    Dirt* dirt4 = myWorld->getDirt(getX()+3, getY()-1);
-    if(dirt1 == nullptr && dirt2 == nullptr && dirt3 == nullptr && dirt4 == nullptr)
+    if(myWorld->canMove(getX(), getY(), down))
       state = "waiting";
     else
       return;
@@ -93,11 +97,7 @@ void Boulder::doSomething()
   }
   if(state == "falling")
   {
-    Dirt* dirt1 = myWorld->getDirt(getX(), getY()-1);
-    Dirt* dirt2 = myWorld->getDirt(getX()+1, getY()-1);
-    Dirt* dirt3 = myWorld->getDirt(getX()+2, getY()-1);
-    Dirt* dirt4 = myWorld->getDirt(getX()+3, getY()-1);
-    if(getY() > 0 && dirt1 == nullptr && dirt2 == nullptr && dirt3 == nullptr && dirt4 == nullptr)
+    if(myWorld->canMove(getX(), getY(), down))
       moveTo(getX(), getY()-1);
     else
       setAlive(false);
