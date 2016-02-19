@@ -2,6 +2,8 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
+#include <string>
+using namespace std;
 class StudentWorld;
 
 class Actor : public GraphObject
@@ -12,13 +14,28 @@ public:
   {
     myWorld = world;
     setVisible(true);
+    isAlive = true;
   }
 
   virtual ~Actor()
   {
   }
 
-  virtual void doSomething() = 0;
+  virtual void doSomething()
+  {
+    if(!isAlive)
+      return;
+  }
+
+  bool isActorAlive()
+  {
+    return isAlive;
+  }
+
+  void setAlive(bool alive)
+  {
+    isAlive = alive;
+  }
 
   StudentWorld* getWorld()
   {
@@ -26,6 +43,7 @@ public:
   }
 private:
   StudentWorld* myWorld;
+  bool isAlive;
 };
 
 class Dirt : public Actor
@@ -34,10 +52,10 @@ public:
   Dirt(int startX, int startY) : Actor(IID_DIRT, startX, startY, nullptr, right, 0.25, 3)
   {
   }
+
   virtual ~Dirt()
   {
   }
-  virtual void doSomething();
 };
 
 class FrackMan : public Actor
@@ -46,10 +64,31 @@ public:
   FrackMan(StudentWorld* world) : Actor(IID_PLAYER, 30, 60, world, right, 1.0, 0)
   {
   }
+
   virtual ~FrackMan()
   {
   }
-  void doSomething();
+
+  virtual void doSomething();
+};
+
+class Boulder : public Actor
+{
+public:
+  Boulder(int x, int y, StudentWorld* world) : Actor(IID_BOULDER, x, y, world, down, 1.0, 1)
+  {
+    state = "stable";
+    countTicks = 0;
+  }
+
+  virtual ~Boulder()
+  {
+  }
+
+  virtual void doSomething();
+private:
+  string state;
+  int countTicks;
 };
 
 #endif // ACTOR_H_

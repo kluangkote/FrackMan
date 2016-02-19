@@ -6,6 +6,7 @@
 #include "Actor.h"
 #include <string>
 #include <iostream>
+#include <vector>
 using namespace std;
 // Students:  Add code to this file, StudentWorld.cpp, Actor.h, and Actor.cpp
 
@@ -15,12 +16,18 @@ public:
 	StudentWorld(std::string assetDir)
 	 : GameWorld(assetDir)
 	{
-		amtOfDirt = 0;
 	}
 
 	virtual ~StudentWorld()
 	{
-		cleanUp();
+		delete player;
+		for(int i = 0; i < VIEW_WIDTH; i++)
+		{
+			for(int j = 0; j < VIEW_HEIGHT-4; j++)
+			{
+				delete dirt[i][j];
+			}
+		}
 	}
 
 	virtual int init();
@@ -29,12 +36,14 @@ public:
 
 	virtual void cleanUp();
 
-	void destroyDirt(int startX, int startY, int endX, int endY);
+	void destroyDirt(int startX, int startY, int endX, int endY, bool isFrack);
+
+	Dirt* getDirt(int x, int y);
 
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];
-	int amtOfDirt;
 	FrackMan* player;
+	vector<Actor*> actors;
 };
 
 #endif // STUDENTWORLD_H_
