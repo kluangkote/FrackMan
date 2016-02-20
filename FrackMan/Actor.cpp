@@ -12,7 +12,7 @@ void FrackMan::doSomething()
         setDirection(left);
       else
       {
-        if(getWorld()->touchingBoulder(getX()-1, getY(), 3.9))
+        if(getWorld()->touchingBoulder(getX()-1, getY(), 3, this))
           return;
         if(getX() > 0)
         {
@@ -28,7 +28,7 @@ void FrackMan::doSomething()
         setDirection(right);
       else
       {
-        if(getWorld()->touchingBoulder(getX()+1, getY(), 3.9))
+        if(getWorld()->touchingBoulder(getX()+1, getY(), 3, this))
           return;
         if(getX() < 60)
         {
@@ -44,7 +44,7 @@ void FrackMan::doSomething()
         setDirection(up);
       else
       {
-        if(getWorld()->touchingBoulder(getX(), getY()+1, 3.9))
+        if(getWorld()->touchingBoulder(getX(), getY()+1, 3, this))
           return;
         if(getY() < 60)
         {
@@ -60,7 +60,7 @@ void FrackMan::doSomething()
         setDirection(down);
       else
       {
-        if(getWorld()->touchingBoulder(getX(), getY()-1, 3.9))
+        if(getWorld()->touchingBoulder(getX(), getY()-1, 3, this))
           return;
         if(getY() > 0)
         {
@@ -73,6 +73,42 @@ void FrackMan::doSomething()
       break;
     }
   }
+}
+
+void FrackMan::addWater()
+{
+  water += 5;
+}
+
+void FrackMan::addSonar()
+{
+  sonar++;
+}
+
+void Goodie::doSomething()
+{
+  int frackX = getWorld()->getFrackX();
+  int frackY = getWorld()->getFrackY();
+  if(getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 3)
+  {
+    getWorld()->playSound(SOUND_GOT_GOODIE);
+    setAlive(false);
+  }
+}
+
+PopUpGoodie::PopUpGoodie(int imageID, int x, int y, StudentWorld* world)
+: Goodie(imageID, x, y , world)
+{
+  int i = 300-10*getWorld()->getLevel();
+  ticks = max(100, i);
+}
+
+void PopUpGoodie::doSomething()
+{
+  ticks--;
+  Goodie::doSomething();
+  if(ticks == 0)
+    setAlive(false);
 }
 
 void Boulder::doSomething()
@@ -97,9 +133,23 @@ void Boulder::doSomething()
   }
   if(state == "falling")
   {
-    if(myWorld->canMove(getX(), getY(), down))
+    if(!myWorld->touchingBoulder(getX(), getY()-1, 3, this) && myWorld->canMove(getX(), getY(), down))
       moveTo(getX(), getY()-1);
     else
       setAlive(false);
   }
+}
+
+void WaterPool::doSomething()
+{
+    PopUpGoodie::doSomething();
+    if(!isActorAlive())
+      getWorld()->addWaterToGun();
+}
+
+void SonarKit::doSomething()
+{
+  PopUpGoodie::doSomething();
+  if(!isActorAlive())
+    getWorld()->addSonarKit();
 }

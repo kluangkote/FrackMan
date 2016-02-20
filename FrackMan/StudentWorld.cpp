@@ -56,6 +56,7 @@ int StudentWorld::init()
 int StudentWorld::move()
 {
 	player->doSomething();
+
 	vector<Actor*>::iterator it;
 	it = actors.begin();
 	while(it != actors.end())
@@ -63,6 +64,45 @@ int StudentWorld::move()
 		(*it)->doSomething();
 		it++;
 	}
+
+	int G = getLevel() * 25 + 300;
+	int randomNumber = rand() % G + 1;
+	if(randomNumber == 1)
+	{
+		int sonarOrWater = rand() % 5 + 1;
+		if(sonarOrWater != 1)
+		{
+			int x = 0;
+			int y = 0;
+			bool add = false;
+			while(!add)
+			{
+				x = rand() % 61;
+				y = rand() % 61;
+				if(dirt[x][y] == nullptr)
+				{
+					add = true;
+					for(int i = x; i < x+4; i++)
+					{
+						for(int j = y; j < y+4; j++)
+						{
+							if(dirt[i][j] != nullptr)
+							{
+								add = false;
+								break;
+							}
+						}
+						if(!add)
+							break;
+					}
+				}
+			}
+			actors.push_back(new WaterPool(x, y, this));
+		}
+		else
+			actors.push_back(new SonarKit(this));
+	}
+
 	it = actors.begin();
 	while(it != actors.end())
 	{
@@ -109,42 +149,34 @@ bool StudentWorld::canMove(int x, int y, GraphObject::Direction dir)
 {
 	if(dir == GraphObject::down)
 	{
-		if(touchingBoulder(x, y, 3))
-			return false;
 		if(y > 0 && dirt[x][y-1] == nullptr && dirt[x+1][y-1] == nullptr && dirt[x+2][y-1] == nullptr && dirt[x+3][y-1] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::up)
 	{
-		if(touchingBoulder(x, y, 3))
-			return false;
 		if(y < 63 && dirt[x][y+1] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+1] == nullptr && dirt[x+3][y+1] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::left)
 	{
-		if(touchingBoulder(x, y, 3))
-			return false;
 		if(x > 0 && dirt[x-1][y] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+2] == nullptr && dirt[x+3][y+3] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::right)
 	{
-		if(touchingBoulder(x, y, 3))
-			return false;
 		if(x < 63 && dirt[x+1][y] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+2] == nullptr && dirt[x+3][y+3] == nullptr)
 			return true;
 	}
 	return false;
 }
 
-bool StudentWorld::touchingBoulder(int x, int y, double radiusLimit)
+bool StudentWorld::touchingBoulder(int x, int y, double radiusLimit, Actor* actor)
 {
 	for(int i = 0; i < actors.size(); i++)
 	{
 		if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= radiusLimit)
 		{
-			if(actors[i]->getX() != x || actors[i]->getY() != y)
+			if(actors[i] != actor)
 				return true;
 		}
 	}
@@ -154,6 +186,26 @@ bool StudentWorld::touchingBoulder(int x, int y, double radiusLimit)
 double StudentWorld::getRadius(int x, int y, int otherX, int otherY)
 {
 	return sqrt(pow(otherX-x,2)+pow(otherY-y,2));
+}
+
+int StudentWorld::getFrackX()
+{
+	return player->getX();
+}
+
+int StudentWorld::getFrackY()
+{
+	return player->getY();
+}
+
+void StudentWorld::addWaterToGun()
+{
+	player->addWater();
+}
+
+void StudentWorld::addSonarKit()
+{
+	player->addSonar();
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp

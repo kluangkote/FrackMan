@@ -42,7 +42,15 @@ public:
 
 	double getRadius(int x, int y, int otherX, int otherY);
 
-	bool touchingBoulder(int x, int y, double radiusLimit);
+	bool touchingBoulder(int x, int y, double radiusLimit, Actor* actor);
+
+	int getFrackX();
+
+	int getFrackY();
+
+	void addWaterToGun();
+
+	void addSonarKit();
 
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];

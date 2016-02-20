@@ -9,13 +9,13 @@ class StudentWorld;
 class Actor : public GraphObject
 {
 public:
-  Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0, bool s = true)
+  Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0, bool sh = true)
   : GraphObject(imageID, startX, startY, dir, size, depth)
   {
     myWorld = world;
     setVisible(true);
     isAlive = true;
-    share = s;
+    share = sh;
   }
 
   virtual ~Actor()
@@ -53,6 +53,35 @@ private:
   bool share;
 };
 
+class Goodie : public Actor
+{
+public:
+  Goodie(int imageID, int x, int y, StudentWorld* world)
+  : Actor(imageID, x, y, world, right, 1, 2)
+  {
+  }
+
+  virtual ~Goodie()
+  {
+  }
+
+  void virtual doSomething();
+};
+
+class PopUpGoodie : public Goodie
+{
+public:
+  PopUpGoodie(int imageID, int x, int y, StudentWorld* world);
+
+  virtual ~PopUpGoodie()
+  {
+  }
+
+  void virtual doSomething();
+private:
+  int ticks;
+};
+
 class Dirt : public Actor
 {
 public:
@@ -70,6 +99,8 @@ class FrackMan : public Actor
 public:
   FrackMan(StudentWorld* world) : Actor(IID_PLAYER, 30, 60, world, right, 1.0, 0)
   {
+    water = 5;
+    sonar = 1;
   }
 
   virtual ~FrackMan()
@@ -77,6 +108,13 @@ public:
   }
 
   virtual void doSomething();
+
+  void addWater();
+
+  void addSonar();
+private:
+  int water;
+  int sonar;
 };
 
 class Boulder : public Actor
@@ -96,6 +134,36 @@ public:
 private:
   string state;
   int countTicks;
+};
+
+class WaterPool : public PopUpGoodie
+{
+public:
+  WaterPool(int x, int y, StudentWorld* world) : PopUpGoodie(IID_WATER_POOL, x, y, world)
+  {
+  }
+
+  virtual ~WaterPool()
+  {
+  }
+
+  virtual void doSomething();
+private:
+  int ticks;
+};
+
+class SonarKit : public PopUpGoodie
+{
+public:
+  SonarKit(StudentWorld* world) : PopUpGoodie(IID_SONAR, 0, 60, world)
+  {
+  }
+
+  virtual ~SonarKit()
+  {
+  }
+
+  virtual void doSomething();
 };
 
 #endif // ACTOR_H_
