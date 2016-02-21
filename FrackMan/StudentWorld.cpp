@@ -61,7 +61,7 @@ int StudentWorld::init()
 	{
 		bool shouldAdd = true;
 		int x = rand() % 61;
-		int y = rand() % 37 + 20;
+		int y = rand() % 61;
 		while(x >= 27 && x <= 33)
 		{
 			x = rand() % 61;
@@ -81,8 +81,65 @@ int StudentWorld::init()
 			L--;
 		}
 	}
+
+	// GOLD NUGGETS
+	int c = 5-getLevel()/2;
+	int G = max(c, 2);
+	while(G > 0)
+	{
+		bool shouldAdd = true;
+		int x = rand() % 61;
+		int y = rand() % 61;
+		while(x >= 27 && x <= 33)
+		{
+			x = rand() % 61;
+			y = rand() % 61;
+		}
+		for(int i = 0; i < actors.size(); i++)
+		{
+			if(getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 6)
+			{
+				shouldAdd = false;
+				break;
+			}
+		}
+		if(shouldAdd)
+		{
+			actors.push_back(new GoldNugget(x, y, this));
+			G--;
+		}
+	}
 	return GWSTATUS_CONTINUE_GAME;
 }
+
+// void findSpot(int numberOfItems)
+// {
+// 	int G = max(numberOfItems, 2);
+// 	while(G > 0)
+// 	{
+// 		bool shouldAdd = true;
+// 		int x = rand() % 61;
+// 		int y = rand() % 61;
+// 		while(x >= 27 && x <= 33)
+// 		{
+// 			x = rand() % 61;
+// 			y = rand() % 61;
+// 		}
+// 		for(int i = 0; i < actors.size(); i++)
+// 		{
+// 			if(getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 6)
+// 			{
+// 				shouldAdd = false;
+// 				break;
+// 			}
+// 		}
+// 		if(shouldAdd)
+// 		{
+// 			actors.push_back(new GoldNugget(x, y, this));
+// 			G--;
+// 		}
+// 	}
+// }
 
 int StudentWorld::move()
 {
@@ -157,6 +214,13 @@ void StudentWorld::cleanUp()
 	for(int i = 0; i < VIEW_WIDTH; i++)
 		for(int j = 0; j < VIEW_HEIGHT-4; j++)
 			delete dirt[i][j];
+	vector<Actor*>::iterator it;
+	it = actors.begin();
+	while(it != actors.end())
+	{
+		delete *it;
+		it = actors.erase(it);
+	}
 }
 
 void StudentWorld::destroyDirt(int startX, int startY, int endX, int endY, bool isFrack)
@@ -250,6 +314,24 @@ void StudentWorld::barrelFound()
 void StudentWorld::addPointsToFrack(int points)
 {
 	player->addPoints(points);
+}
+
+void StudentWorld::addGold()
+{
+	player->addGold();
+}
+
+void StudentWorld::sonar()
+{
+	playSound(SOUND_SONAR);
+	for(int i = 0; i < actors.size(); i++)
+	{
+		if(getRadius(getFrackX(), getFrackY(), actors[i]->getX(), actors[i]->getY()) <= 12)
+		{
+			actors[i]->setVisible(true);
+			actors[i]->setHidden(false);
+		}
+	}
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp

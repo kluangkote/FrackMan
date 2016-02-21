@@ -16,6 +16,7 @@ public:
     setVisible(true);
     isAlive = true;
     share = sh;
+    hidden = false;
   }
 
   virtual ~Actor()
@@ -47,10 +48,21 @@ public:
   {
     return share;
   }
+
+  void setHidden(bool state)
+  {
+    hidden = state;
+  }
+
+  bool isHidden()
+  {
+    return hidden;
+  }
 private:
   StudentWorld* myWorld;
   bool isAlive;
   bool share;
+  bool hidden;
 };
 
 class Goodie : public Actor
@@ -101,6 +113,8 @@ public:
   {
     water = 5;
     sonar = 1;
+    gold = 0;
+    points = 0;
   }
 
   virtual ~FrackMan()
@@ -114,10 +128,13 @@ public:
   void addSonar();
 
   void addPoints(int pointsToAdd);
+
+  void addGold();
 private:
   int water;
   int sonar;
   int points;
+  int gold;
 };
 
 class Boulder : public Actor
@@ -174,26 +191,19 @@ class Buried : public Goodie
 public:
   Buried(int imageID, int x, int y, StudentWorld* world) : Goodie(imageID, x, y, world)
   {
-    isHidden = true;
+    setHidden(true);
   }
 
   virtual ~Buried()
   {
   }
 
-  virtual void doSomething() {}
-
-  bool hidden()
+  virtual void doSomething()
   {
-    return isHidden;
+    Actor::doSomething();
   }
 
-  void setStatusToVisible()
-  {
-    isHidden = false;
-  }
-private:
-  bool isHidden;
+  void showSelf();
 };
 
 class OilBarrel : public Buried
@@ -207,6 +217,19 @@ public:
     {
     }
     virtual void doSomething();
+};
+
+class GoldNugget : public Buried
+{
+public:
+  GoldNugget(int startX, int startY, StudentWorld* world) : Buried(IID_GOLD, startX, startY, world)
+  {
+    setVisible(false);
+  }
+  virtual ~GoldNugget()
+  {
+  }
+  virtual void doSomething();
 };
 
 #endif // ACTOR_H_

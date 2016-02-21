@@ -54,7 +54,11 @@ public:
 
 	void barrelFound();
 
-	void addPointsToFrack();
+	void addPointsToFrack(int points);
+
+	void addGold();
+
+	void sonar();
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];
 	FrackMan* player;
