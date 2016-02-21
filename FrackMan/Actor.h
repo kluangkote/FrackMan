@@ -65,7 +65,7 @@ public:
   {
   }
 
-  void virtual doSomething();
+  void virtual doSomething(int sound);
 };
 
 class PopUpGoodie : public Goodie
@@ -112,9 +112,12 @@ public:
   void addWater();
 
   void addSonar();
+
+  void addPoints(int pointsToAdd);
 private:
   int water;
   int sonar;
+  int points;
 };
 
 class Boulder : public Actor
@@ -164,6 +167,46 @@ public:
   }
 
   virtual void doSomething();
+};
+
+class Buried : public Goodie
+{
+public:
+  Buried(int imageID, int x, int y, StudentWorld* world) : Goodie(imageID, x, y, world)
+  {
+    isHidden = true;
+  }
+
+  virtual ~Buried()
+  {
+  }
+
+  virtual void doSomething() {}
+
+  bool hidden()
+  {
+    return isHidden;
+  }
+
+  void setStatusToVisible()
+  {
+    isHidden = false;
+  }
+private:
+  bool isHidden;
+};
+
+class OilBarrel : public Buried
+{
+public:
+    OilBarrel(int startX, int startY, StudentWorld* world) : Buried(IID_BARREL, startX, startY, world)
+    {
+      setVisible(false);
+    }
+    virtual ~OilBarrel()
+    {
+    }
+    virtual void doSomething();
 };
 
 #endif // ACTOR_H_

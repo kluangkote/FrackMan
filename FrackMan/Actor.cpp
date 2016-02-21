@@ -85,13 +85,18 @@ void FrackMan::addSonar()
   sonar++;
 }
 
-void Goodie::doSomething()
+void FrackMan::addPoints(int pointsToAdd)
+{
+  points += pointsToAdd;
+}
+
+void Goodie::doSomething(int sound = SOUND_GOT_GOODIE)
 {
   int frackX = getWorld()->getFrackX();
   int frackY = getWorld()->getFrackY();
   if(getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 3)
   {
-    getWorld()->playSound(SOUND_GOT_GOODIE);
+    getWorld()->playSound(sound);
     setAlive(false);
   }
 }
@@ -152,4 +157,23 @@ void SonarKit::doSomething()
   PopUpGoodie::doSomething();
   if(!isActorAlive())
     getWorld()->addSonarKit();
+}
+
+void OilBarrel::doSomething()
+{
+  Actor::doSomething();
+  int frackX = getWorld()->getFrackX();
+  int frackY = getWorld()->getFrackY();
+  if(hidden() && getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 4)
+  {
+    setVisible(true);
+    setStatusToVisible();
+    return;
+  }
+  Goodie::doSomething(SOUND_FOUND_OIL);
+  if(!isActorAlive())
+  {
+    getWorld()->addPointsToFrack(1000);
+    getWorld()->barrelFound();
+  }
 }

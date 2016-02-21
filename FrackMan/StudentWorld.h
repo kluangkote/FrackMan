@@ -52,10 +52,14 @@ public:
 
 	void addSonarKit();
 
+	void barrelFound();
+
+	void addPointsToFrack();
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];
 	FrackMan* player;
 	vector<Actor*> actors;
+	int barrel;
 };
 
 #endif // STUDENTWORLD_H_

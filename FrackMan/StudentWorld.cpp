@@ -23,6 +23,8 @@ int StudentWorld::init()
 		}
 	}
 	player = new FrackMan(this);
+
+	// BOULDER
 	int x = getLevel()/2+2;
 	int B = min(x, 6);
 	while(B > 0)
@@ -48,6 +50,35 @@ int StudentWorld::init()
 			actors.push_back(new Boulder(x, y, this));
 			destroyDirt(x, y, x+3, y+3, false);
 			B--;
+		}
+	}
+
+	// BARRELS OF OIL
+	int a = 2 + getLevel();
+	int L = min(a, 20);
+	barrel = L;
+	while(L > 0)
+	{
+		bool shouldAdd = true;
+		int x = rand() % 61;
+		int y = rand() % 37 + 20;
+		while(x >= 27 && x <= 33)
+		{
+			x = rand() % 61;
+			y = rand() % 37 + 20;
+		}
+		for(int i = 0; i < actors.size(); i++)
+		{
+			if(getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 6)
+			{
+				shouldAdd = false;
+				break;
+			}
+		}
+		if(shouldAdd)
+		{
+			actors.push_back(new OilBarrel(x, y, this));
+			L--;
 		}
 	}
 	return GWSTATUS_CONTINUE_GAME;
@@ -102,6 +133,9 @@ int StudentWorld::move()
 		else
 			actors.push_back(new SonarKit(this));
 	}
+
+	if(barrel == 0)
+		return GWSTATUS_FINISHED_LEVEL;
 
 	it = actors.begin();
 	while(it != actors.end())
@@ -206,6 +240,16 @@ void StudentWorld::addWaterToGun()
 void StudentWorld::addSonarKit()
 {
 	player->addSonar();
+}
+
+void StudentWorld::barrelFound()
+{
+	barrel--;
+}
+
+void StudentWorld::addPointsToFrack(int points)
+{
+	player->addPoints(points);
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
