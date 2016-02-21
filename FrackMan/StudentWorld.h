@@ -42,7 +42,7 @@ public:
 
 	double getRadius(int x, int y, int otherX, int otherY);
 
-	bool touchingBoulder(int x, int y, double radiusLimit, Actor* actor);
+	bool touchingBoulder(int x, int y, GraphObject::Direction dir, double radiusLimit, Actor* actor);
 
 	int getFrackX();
 
@@ -59,8 +59,12 @@ public:
 	void addGold();
 
 	void sonar();
+
+	void addSquirt();
+
+	void addBribe();
 private:
-	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT-4];
+	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT];
 	FrackMan* player;
 	vector<Actor*> actors;
 	int barrel;

@@ -1,3 +1,6 @@
+
+
+
 #include "Actor.h"
 #include "StudentWorld.h"
 
@@ -12,7 +15,7 @@ void FrackMan::doSomething()
         setDirection(left);
       else
       {
-        if(getWorld()->touchingBoulder(getX()-1, getY(), 3, this))
+        if(getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
           return;
         if(getX() > 0)
         {
@@ -28,7 +31,7 @@ void FrackMan::doSomething()
         setDirection(right);
       else
       {
-        if(getWorld()->touchingBoulder(getX()+1, getY(), 3, this))
+        if(getWorld()->touchingBoulder(getX(), getY(), right, 3, this))
           return;
         if(getX() < 60)
         {
@@ -44,7 +47,7 @@ void FrackMan::doSomething()
         setDirection(up);
       else
       {
-        if(getWorld()->touchingBoulder(getX(), getY()+1, 3, this))
+        if(getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
           return;
         if(getY() < 60)
         {
@@ -60,7 +63,7 @@ void FrackMan::doSomething()
         setDirection(down);
       else
       {
-        if(getWorld()->touchingBoulder(getX(), getY()-1, 3, this))
+        if(getWorld()->touchingBoulder(getX(), getY(), down, 3, this))
           return;
         if(getY() > 0)
         {
@@ -77,6 +80,74 @@ void FrackMan::doSomething()
       {
         getWorld()->sonar();
         sonar--;
+      }
+      break;
+      case KEY_PRESS_SPACE:
+      if(water > 0)
+      {
+        int waterX = getX();
+        int waterY = getY();
+        bool canPlace = true;
+        StudentWorld* world = getWorld();
+        if(getDirection() == left)
+        {
+          waterX -= 4;
+          for(int i = waterX; i < waterX+4; i++)
+          {
+            if(!world->canMove(i-1, waterY, right))
+            {
+              canPlace = false;
+              break;
+            }
+          }
+          if(canPlace && !world->touchingBoulder(waterX, waterY, left, 3, this))
+          {
+            getWorld()->addSquirt();
+            water--;
+          }
+        }
+        if(getDirection() == right)
+        {
+          waterX += 4;
+          if(world->canMove(waterX-1, waterY, right) && !world->touchingBoulder(waterX, waterY, right, 3, this))
+          {
+            getWorld()->addSquirt();
+            water--;
+          }
+        }
+        if(getDirection() == up)
+        {
+          waterY += 4;
+          if(world->canMove(waterX, waterY-1, up) && !world->touchingBoulder(waterX, waterY, up, 3, this))
+          {
+            getWorld()->addSquirt();
+            water--;
+          }
+        }
+        if(getDirection() == down)
+        {
+          waterY -= 4;
+          for(int i = waterY; i < waterY+4; i++)
+          {
+            if(!world->canMove(waterX, i-1, up))
+            {
+              canPlace = false;
+              break;
+            }
+          }
+          if(canPlace && !world->touchingBoulder(waterX, waterY, down, 3, this))
+          {
+            getWorld()->addSquirt();
+            water--;
+          }
+        }
+      }
+      break;
+      case KEY_PRESS_TAB:
+      if(gold > 0)
+      {
+        getWorld()->addBribe();
+        gold--;
       }
       break;
     }
@@ -151,7 +222,7 @@ void Boulder::doSomething()
   }
   if(state == "falling")
   {
-    if(!myWorld->touchingBoulder(getX(), getY()-1, 3, this) && myWorld->canMove(getX(), getY(), down))
+    if(!myWorld->touchingBoulder(getX(), getY(), down, 3, this) && myWorld->canMove(getX(), getY(), down))
       moveTo(getX(), getY()-1);
     else
       setAlive(false);
@@ -197,11 +268,48 @@ void OilBarrel::doSomething()
 
 void GoldNugget::doSomething()
 {
-  showSelf();
-  Goodie::doSomething();
-  if(!isActorAlive())
+  if(!myBribe)
   {
-    getWorld()->addPointsToFrack(10);
-    getWorld()->addGold();
+    showSelf();
+    Goodie::doSomething();
+    if(!isActorAlive())
+    {
+      getWorld()->addPointsToFrack(10);
+      getWorld()->addGold();
+    }
+  }
+  else
+  {
+    if(ticks > 0)
+    {
+      ticks--;
+    }
+    else
+      setAlive(false);
+  }
+}
+
+void Squirt::doSomething()
+{
+  if(distance == 4)
+  {
+    setAlive(false);
+    return;
+  }
+  if(getWorld()->touchingBoulder(getX(), getY(), myDir, 3, this) || !getWorld()->canMove(getX(), getY(), myDir))
+  {
+    setAlive(false);
+  }
+  else
+  {
+    distance++;
+    if(myDir == up)
+      moveTo(getX(), getY()+1);
+    if(myDir == down)
+      moveTo(getX(), getY()-1);
+    if(myDir == left)
+      moveTo(getX()-1, getY());
+    if(myDir == right)
+      moveTo(getX()+1, getY());
   }
 }

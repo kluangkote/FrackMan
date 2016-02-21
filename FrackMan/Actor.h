@@ -191,6 +191,7 @@ class Buried : public Goodie
 public:
   Buried(int imageID, int x, int y, StudentWorld* world) : Goodie(imageID, x, y, world)
   {
+    setVisible(false);
     setHidden(true);
   }
 
@@ -211,7 +212,6 @@ class OilBarrel : public Buried
 public:
     OilBarrel(int startX, int startY, StudentWorld* world) : Buried(IID_BARREL, startX, startY, world)
     {
-      setVisible(false);
     }
     virtual ~OilBarrel()
     {
@@ -222,14 +222,41 @@ public:
 class GoldNugget : public Buried
 {
 public:
-  GoldNugget(int startX, int startY, StudentWorld* world) : Buried(IID_GOLD, startX, startY, world)
+  GoldNugget(int startX, int startY, bool bribe, StudentWorld* world) : Buried(IID_GOLD, startX, startY, world)
   {
-    setVisible(false);
+    myBribe = bribe;
+    if(myBribe)
+    {
+      setVisible(true);
+      ticks = 100;
+    }
+    else
+      ticks = -1;
   }
   virtual ~GoldNugget()
   {
   }
   virtual void doSomething();
+private:
+  bool myBribe;
+  int ticks;
+};
+
+class Squirt : public Actor
+{
+public:
+  Squirt(int x, int y, Direction dir, StudentWorld* world) : Actor(IID_WATER_SPURT, x, y, world, dir, 1.0, 1)
+  {
+    myDir = dir;
+    distance = 0;
+  }
+  virtual ~Squirt()
+  {
+  }
+  virtual void doSomething();
+private:
+  int distance;
+  Direction myDir;
 };
 
 #endif // ACTOR_H_

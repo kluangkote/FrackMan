@@ -14,9 +14,9 @@ int StudentWorld::init()
 {
 	for(int i = 0; i < VIEW_WIDTH; i++)
 	{
-		for(int j = 0; j < VIEW_HEIGHT-4; j++)
+		for(int j = 0; j < VIEW_HEIGHT; j++)
 		{
-			if(i >= 30 && i <= 33 && j >= 4)
+			if(i >= 30 && i <= 33 && j >= 4 || j >= 60)
 				dirt[i][j] = nullptr;
 			else
 				dirt[i][j] = new Dirt(i, j);
@@ -105,7 +105,7 @@ int StudentWorld::init()
 		}
 		if(shouldAdd)
 		{
-			actors.push_back(new GoldNugget(x, y, this));
+			actors.push_back(new GoldNugget(x, y, false, this));
 			G--;
 		}
 	}
@@ -143,8 +143,6 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-	player->doSomething();
-
 	vector<Actor*>::iterator it;
 	it = actors.begin();
 	while(it != actors.end())
@@ -152,6 +150,8 @@ int StudentWorld::move()
 		(*it)->doSomething();
 		it++;
 	}
+
+	player->doSomething();
 
 	int G = getLevel() * 25 + 300;
 	int randomNumber = rand() % G + 1;
@@ -252,24 +252,32 @@ bool StudentWorld::canMove(int x, int y, GraphObject::Direction dir)
 	}
 	if(dir == GraphObject::up)
 	{
-		if(y < 63 && dirt[x][y+1] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+1] == nullptr && dirt[x+3][y+1] == nullptr)
+		if(y < 63 && dirt[x][y+4] == nullptr && dirt[x+1][y+4] == nullptr && dirt[x+2][y+4] == nullptr && dirt[x+3][y+4] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::left)
 	{
-		if(x > 0 && dirt[x-1][y] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+2] == nullptr && dirt[x+3][y+3] == nullptr)
+		if(x > 0 && dirt[x-1][y] == nullptr && dirt[x-1][y+1] == nullptr && dirt[x-1][y+2] == nullptr && dirt[x-1][y+3] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::right)
 	{
-		if(x < 63 && dirt[x+1][y] == nullptr && dirt[x+1][y+1] == nullptr && dirt[x+2][y+2] == nullptr && dirt[x+3][y+3] == nullptr)
+		if(x < 63 && dirt[x+4][y] == nullptr && dirt[x+4][y+1] == nullptr && dirt[x+4][y+2] == nullptr && dirt[x+4][y+3] == nullptr)
 			return true;
 	}
 	return false;
 }
 
-bool StudentWorld::touchingBoulder(int x, int y, double radiusLimit, Actor* actor)
+bool StudentWorld::touchingBoulder(int x, int y, GraphObject::Direction dir, double radiusLimit, Actor* actor)
 {
+    if(dir == GraphObject::left)
+			x--;
+    if(dir == GraphObject::right)
+			x++;
+    if(dir == GraphObject::up)
+			y++;
+    if(dir == GraphObject::down)
+		y--;
 	for(int i = 0; i < actors.size(); i++)
 	{
 		if(!actors[i]->canShareSpace() && getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= radiusLimit)
@@ -332,6 +340,25 @@ void StudentWorld::sonar()
 			actors[i]->setHidden(false);
 		}
 	}
+}
+
+void StudentWorld::addSquirt()
+{
+	playSound(SOUND_PLAYER_SQUIRT);
+	GraphObject::Direction direction = player->getDirection();
+	if(direction == GraphObject::left)
+		actors.push_back(new Squirt(getFrackX()-4, getFrackY(), direction, this));
+	if(direction == GraphObject::right)
+		actors.push_back(new Squirt(getFrackX()+4, getFrackY(), direction, this));
+	if(direction == GraphObject::up)
+		actors.push_back(new Squirt(getFrackX(), getFrackY()+4, direction, this));;
+	if(direction == GraphObject::down)
+		actors.push_back(new Squirt(getFrackX(), getFrackY()-4, direction, this));
+}
+
+void StudentWorld::addBribe()
+{
+	actors.push_back(new GoldNugget(getFrackX(), getFrackY(), true, this));
 }
 
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
