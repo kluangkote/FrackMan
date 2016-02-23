@@ -16,7 +16,7 @@ int StudentWorld::init()
 	{
 		for(int j = 0; j < VIEW_HEIGHT; j++)
 		{
-			if(i >= 30 && i <= 33 && j >= 4 || j >= 60)
+			if((i >= 30 && i <= 33 && j >= 4) || j >= 60)
 				dirt[i][j] = nullptr;
 			else
 				dirt[i][j] = new Dirt(i, j);
@@ -192,7 +192,10 @@ int StudentWorld::move()
 	}
 
 	if(barrel == 0)
+	{
+		playSound(SOUND_FINISHED_LEVEL);
 		return GWSTATUS_FINISHED_LEVEL;
+	}
 
 	it = actors.begin();
 	while(it != actors.end())
@@ -205,6 +208,8 @@ int StudentWorld::move()
 		else
 			it++;
 	}
+
+	setDisplayText();
 	return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -221,6 +226,62 @@ void StudentWorld::cleanUp()
 		delete *it;
 		it = actors.erase(it);
 	}
+}
+
+void StudentWorld::setDisplayText()
+{
+	// int score = getCurrentScore();
+	int level = getLevel();
+	int lives = getLives();
+	// int health = getCurrentHealth();
+	int squirts = player->getWater();
+	int gold = player->getGold();
+	int sonar = player->getSonar();
+	// Next, create a string from your statistics, of the form:
+	// Scr: 321000 Lvl: 52 Lives: 3 Hlth: 80% Wtr: 20 Gld: 3 Sonar: 1 Oil Left: 2
+	string s = formatStats(100000, level, lives, 100, squirts, gold, sonar, barrel);
+	// Finally, update the display text at the top of the screen with your // newly created stats
+	setGameStatText(s); // calls our provided GameWorld::setGameStatText
+}
+
+string StudentWorld::formatStats(int score, int level, int lives, int health, int squirts, int gold, int sonar, int barrels)
+{
+	string ans = "";
+	ans += "Scr: " + to_string(score);
+	string levelString = to_string(level);
+	if(levelString.size() == 1)
+		ans += "  Lvl:  " + levelString;
+	else
+		ans += "  Lvl: " + levelString;
+	ans += "  Lives: " + to_string(lives);
+	string healthString = to_string(health);
+	if(healthString.size() == 3)
+		ans += "  Hlth: " + healthString + "%";
+	else if(healthString.size() == 2)
+		ans += "  Hlth:  " + healthString;
+	else
+		ans += "  Hlth: " + healthString;
+	string squirtString = to_string(squirts);
+	if(squirtString.size() == 1)
+		ans += "  Wtr:  " + squirtString;
+	else
+		ans += "  Wtr: " + squirtString;
+	string goldString = to_string(gold);
+	if(goldString.size() == 1)
+		ans += "  Gld:  " + goldString;
+	else
+		ans += "  Gld: " + goldString;
+	string sonarString = to_string(sonar);
+	if(sonarString.size() == 1)
+		ans += "  Sonar:  " + sonarString;
+	else
+		ans += "  Sonar: " + sonarString;
+	string barrelString = to_string(barrels);
+	if(barrelString.size() == 1)
+		ans += "  Oil Left:  " + barrelString;
+	else
+		ans += "  Oil Left: " + barrelString;
+	return ans;
 }
 
 void StudentWorld::destroyDirt(int startX, int startY, int endX, int endY, bool isFrack)
@@ -252,7 +313,7 @@ bool StudentWorld::canMove(int x, int y, GraphObject::Direction dir)
 	}
 	if(dir == GraphObject::up)
 	{
-		if(y < 63 && dirt[x][y+4] == nullptr && dirt[x+1][y+4] == nullptr && dirt[x+2][y+4] == nullptr && dirt[x+3][y+4] == nullptr)
+		if(y < 60 && dirt[x][y+4] == nullptr && dirt[x+1][y+4] == nullptr && dirt[x+2][y+4] == nullptr && dirt[x+3][y+4] == nullptr)
 			return true;
 	}
 	if(dir == GraphObject::left)
@@ -262,7 +323,7 @@ bool StudentWorld::canMove(int x, int y, GraphObject::Direction dir)
 	}
 	if(dir == GraphObject::right)
 	{
-		if(x < 63 && dirt[x+4][y] == nullptr && dirt[x+4][y+1] == nullptr && dirt[x+4][y+2] == nullptr && dirt[x+4][y+3] == nullptr)
+		if(x < 60 && dirt[x+4][y] == nullptr && dirt[x+4][y+1] == nullptr && dirt[x+4][y+2] == nullptr && dirt[x+4][y+3] == nullptr)
 			return true;
 	}
 	return false;

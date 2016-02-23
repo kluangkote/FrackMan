@@ -91,16 +91,20 @@ void FrackMan::doSomething()
         StudentWorld* world = getWorld();
         if(getDirection() == left)
         {
-          waterX -= 4;
-          for(int i = waterX; i < waterX+4; i++)
+          if(waterX-4 < 0)
           {
-            if(!world->canMove(i-1, waterY, right))
+            canPlace = false;
+            break;
+          }
+          for(int i = waterX; i > waterX-4; i--)
+          {
+            if(!world->canMove(i, waterY, left))
             {
               canPlace = false;
               break;
             }
           }
-          if(canPlace && !world->touchingBoulder(waterX, waterY, left, 3, this))
+          if(canPlace && !world->touchingBoulder(waterX-4, waterY, left, 3, this))
           {
             getWorld()->addSquirt();
             water--;
@@ -121,12 +125,16 @@ void FrackMan::doSomething()
           if(world->canMove(waterX, waterY-1, up) && !world->touchingBoulder(waterX, waterY, up, 3, this))
           {
             getWorld()->addSquirt();
-            water--;
           }
         }
         if(getDirection() == down)
         {
           waterY -= 4;
+          if(waterY < 0)
+          {
+            canPlace = false;
+            break;
+          }
           for(int i = waterY; i < waterY+4; i++)
           {
             if(!world->canMove(waterX, i-1, up))
@@ -172,6 +180,25 @@ void FrackMan::addPoints(int pointsToAdd)
 void FrackMan::addGold()
 {
   gold++;
+}
+
+int FrackMan::getWater()
+{
+  return water;
+}
+
+int FrackMan::getSonar()
+{
+  return sonar;
+}
+int FrackMan::getPoints()
+{
+  return points;
+}
+
+int FrackMan::getGold()
+{
+  return gold;
 }
 
 void Goodie::doSomething(int sound = SOUND_GOT_GOODIE)

@@ -36,6 +36,10 @@ public:
 
 	virtual void cleanUp();
 
+	void setDisplayText();
+
+	string formatStats(int score, int level, int lives, int health, int squirts, int gold, int sonar, int barrels);
+
 	void destroyDirt(int startX, int startY, int endX, int endY, bool isFrack);
 
 	bool canMove(int x, int y, GraphObject::Direction dir);

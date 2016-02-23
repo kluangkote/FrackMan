@@ -111,7 +111,7 @@ class FrackMan : public Actor
 public:
   FrackMan(StudentWorld* world) : Actor(IID_PLAYER, 30, 60, world, right, 1.0, 0)
   {
-    water = 5;
+    water = 500;
     sonar = 1;
     gold = 0;
     points = 0;
@@ -130,6 +130,14 @@ public:
   void addPoints(int pointsToAdd);
 
   void addGold();
+
+  int getWater();
+
+  int getSonar();
+
+  int getPoints();
+
+  int getGold();
 private:
   int water;
   int sonar;
