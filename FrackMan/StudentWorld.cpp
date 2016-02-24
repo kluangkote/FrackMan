@@ -3,7 +3,14 @@
 #include <string>
 #include <algorithm>
 #include <cstdlib>
+#include <queue>
 using namespace std;
+
+struct Position
+{
+    int x;
+    int y;
+};
 
 GameWorld* createStudentWorld(string assetDir)
 {
@@ -12,6 +19,8 @@ GameWorld* createStudentWorld(string assetDir)
 
 int StudentWorld::init()
 {
+
+	// DIRT
 	for(int i = 0; i < VIEW_WIDTH; i++)
 	{
 		for(int j = 0; j < VIEW_HEIGHT; j++)
@@ -22,7 +31,18 @@ int StudentWorld::init()
 				dirt[i][j] = new Dirt(i, j);
 		}
 	}
+	for(int i = 0; i < VIEW_WIDTH; i++)
+	{
+		for(int j = 0; j < VIEW_HEIGHT; j++)
+		{
+			pathToExit[i][j] = -1;
+		}
+	}
+
+	// FRACKMAN
 	player = new FrackMan(this);
+
+	actors.push_back(new RegularProtester(this));
 
 	// BOULDER
 	int x = getLevel()/2+2;
@@ -61,11 +81,11 @@ int StudentWorld::init()
 	{
 		bool shouldAdd = true;
 		int x = rand() % 61;
-		int y = rand() % 61;
+		int y = rand() % 57;
 		while(x >= 27 && x <= 33)
 		{
 			x = rand() % 61;
-			y = rand() % 37 + 20;
+			y = rand() % 57;
 		}
 		for(int i = 0; i < actors.size(); i++)
 		{
@@ -89,11 +109,11 @@ int StudentWorld::init()
 	{
 		bool shouldAdd = true;
 		int x = rand() % 61;
-		int y = rand() % 61;
+		int y = rand() % 57;
 		while(x >= 27 && x <= 33)
 		{
 			x = rand() % 61;
-			y = rand() % 61;
+			y = rand() % 57;
 		}
 		for(int i = 0; i < actors.size(); i++)
 		{
@@ -153,6 +173,8 @@ int StudentWorld::move()
 
 	player->doSomething();
 
+	layOutShortestPath();
+
 	int G = getLevel() * 25 + 300;
 	int randomNumber = rand() % G + 1;
 	if(randomNumber == 1)
@@ -197,6 +219,12 @@ int StudentWorld::move()
 		return GWSTATUS_FINISHED_LEVEL;
 	}
 
+	if(player->getHealth() <= 0)
+	{
+		playSound(SOUND_PLAYER_GIVE_UP);
+		return GWSTATUS_PLAYER_DIED;
+	}
+
 	it = actors.begin();
 	while(it != actors.end())
 	{
@@ -230,16 +258,16 @@ void StudentWorld::cleanUp()
 
 void StudentWorld::setDisplayText()
 {
-	// int score = getCurrentScore();
+	int score = player->getPoints();
 	int level = getLevel();
 	int lives = getLives();
-	// int health = getCurrentHealth();
+	int health = player->getHealth()*10;
 	int squirts = player->getWater();
 	int gold = player->getGold();
 	int sonar = player->getSonar();
 	// Next, create a string from your statistics, of the form:
 	// Scr: 321000 Lvl: 52 Lives: 3 Hlth: 80% Wtr: 20 Gld: 3 Sonar: 1 Oil Left: 2
-	string s = formatStats(100000, level, lives, 100, squirts, gold, sonar, barrel);
+	string s = formatStats(score, level, lives, health, squirts, gold, sonar, barrel);
 	// Finally, update the display text at the top of the screen with your // newly created stats
 	setGameStatText(s); // calls our provided GameWorld::setGameStatText
 }
@@ -247,7 +275,19 @@ void StudentWorld::setDisplayText()
 string StudentWorld::formatStats(int score, int level, int lives, int health, int squirts, int gold, int sonar, int barrels)
 {
 	string ans = "";
-	ans += "Scr: " + to_string(score);
+	string scoreString = to_string(score);
+	if(scoreString.size() == 1)
+		ans += "Scr: 00000" + scoreString;
+	else if(scoreString.size() == 2)
+		ans += "Scr: 0000" + scoreString;
+	else if(scoreString.size() == 3)
+		ans += "Scr: 000" + scoreString;
+	else if(scoreString.size() == 4)
+		ans += "Scr: 00" + scoreString;
+	else if(scoreString.size() == 5)
+		ans += "Scr: 0" + scoreString;
+	else
+		ans += "Scr: " + scoreString;
 	string levelString = to_string(level);
 	if(levelString.size() == 1)
 		ans += "  Lvl:  " + levelString;
@@ -258,7 +298,7 @@ string StudentWorld::formatStats(int score, int level, int lives, int health, in
 	if(healthString.size() == 3)
 		ans += "  Hlth: " + healthString + "%";
 	else if(healthString.size() == 2)
-		ans += "  Hlth:  " + healthString;
+		ans += "  Hlth:  " + healthString + "%";
 	else
 		ans += "  Hlth: " + healthString;
 	string squirtString = to_string(squirts);
@@ -405,7 +445,6 @@ void StudentWorld::sonar()
 
 void StudentWorld::addSquirt()
 {
-	playSound(SOUND_PLAYER_SQUIRT);
 	GraphObject::Direction direction = player->getDirection();
 	if(direction == GraphObject::left)
 		actors.push_back(new Squirt(getFrackX()-4, getFrackY(), direction, this));
@@ -422,4 +461,138 @@ void StudentWorld::addBribe()
 	actors.push_back(new GoldNugget(getFrackX(), getFrackY(), true, this));
 }
 
+bool StudentWorld::annoyFrack(int damage)
+{
+	if(damage == 100)
+	{
+		if(touchingBoulder(getFrackX(), getFrackY(), player->getDirection(), 3, player))
+		{
+			player->getAnnoyed(damage);
+			decLives();
+			return true;
+		}
+	}
+	if(damage == 2)
+	{
+		player->getAnnoyed(damage);
+		return true;
+	}
+	return false;
+}
+
+bool StudentWorld::annoyProtesters(Actor* actor, int damage)
+{
+	bool annoyed = false;
+	for(int i = 0; i < actors.size(); i++)
+	{
+		if(actors[i]->canGetAnnoyed())
+		{
+			if(getRadius(actor->getX(), actor->getY(), actors[i]->getX(), actors[i]->getY()) <= 3)
+			{
+				actors[i]->getAnnoyed(damage);
+				annoyed = true;
+			}
+		}
+	}
+	return annoyed;
+}
+
+bool StudentWorld::pickUpGold(Actor* actor)
+{
+	for(int i = 0; i < actors.size(); i++)
+	{
+		if(actors[i]->canGetAnnoyed())
+		{
+			if(getRadius(actor->getX(), actor->getY(), actors[i]->getX(), actors[i]->getY()) <= 3)
+			{
+				actors[i]->receiveGold();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void StudentWorld::layOutShortestPath()
+{
+	queue<Position> q;
+	Position curr;
+	curr.x = 60;
+	curr.y = 60;
+	q.push(curr);
+	pathToExit[curr.x][curr.y] = 0;
+	while(!q.empty())
+	{
+		curr = q.front();
+		q.pop();
+    if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && pathToExit[curr.x][curr.y+1] < 0)
+		{
+			Position north;
+			north.x = curr.x;
+			north.y = curr.y+1;
+			q.push(north);
+			pathToExit[north.x][north.y] = pathToExit[curr.x][curr.y] + 1;
+		}
+  	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && pathToExit[curr.x+1][curr.y] < 0)
+		{
+			Position east;
+			east.x = curr.x+1;
+			east.y = curr.y;
+			q.push(east);
+			pathToExit[east.x][east.y] = pathToExit[curr.x][curr.y] + 1;
+		}
+    if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && pathToExit[curr.x][curr.y-1] < 0)
+		{
+			Position south;
+			south.x = curr.x;
+			south.y = curr.y-1;
+			q.push(south);
+			pathToExit[south.x][south.y] = pathToExit[curr.x][curr.y] + 1;
+		}
+    if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && pathToExit[curr.x-1][curr.y] < 0)
+		{
+			Position west;
+			west.x = curr.x-1;
+            west.y = curr.y;
+			q.push(west);
+			pathToExit[west.x][west.y] = pathToExit[curr.x][curr.y] + 1;
+		}
+	}
+}
+
+GraphObject::Direction StudentWorld::getShortestDirection(int x, int y)
+{
+	int shortest = 64;
+    GraphObject::Direction dir = GraphObject::up;
+	if(y < 60 && pathToExit[x][y+1] >= 0)
+	{
+		shortest = pathToExit[x][y+1];
+        dir = GraphObject::up;
+	}
+	if(y > 0 && pathToExit[x][y-1] >= 0)
+	{
+		if(pathToExit[x][y-1] < shortest)
+		{
+			shortest = pathToExit[x][y-1];
+            dir = GraphObject::down;
+		}
+	}
+	if(x < 60 && pathToExit[x+1][y] >= 0)
+	{
+			if(pathToExit[x+1][y] < shortest)
+			{
+				shortest = pathToExit[x+1][y];
+                dir = GraphObject::right;
+			}
+	}
+	if(x > 0 && pathToExit[x-1][y] >= 0)
+	{
+		if(pathToExit[x-1][y] < shortest)
+		{
+			shortest = pathToExit[x-1][y];
+            dir = GraphObject::left;
+		}
+	}
+	return dir;
+}
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp

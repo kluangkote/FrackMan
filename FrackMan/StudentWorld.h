@@ -67,11 +67,22 @@ public:
 	void addSquirt();
 
 	void addBribe();
+
+	bool annoyFrack(int damage);
+
+	bool annoyProtesters(Actor* actor, int damage);
+
+	bool pickUpGold(Actor* actor);
+
+	void layOutShortestPath();
+
+	GraphObject::Direction getShortestDirection(int x, int y);
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT];
 	FrackMan* player;
 	vector<Actor*> actors;
 	int barrel;
+	int pathToExit[VIEW_WIDTH][VIEW_HEIGHT];
 };
 
 #endif // STUDENTWORLD_H_

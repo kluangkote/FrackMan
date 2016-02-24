@@ -9,14 +9,15 @@ class StudentWorld;
 class Actor : public GraphObject
 {
 public:
-  Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0, bool sh = true)
-  : GraphObject(imageID, startX, startY, dir, size, depth)
+  Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0,
+  bool sh = true, bool annoy = false) : GraphObject(imageID, startX, startY, dir, size, depth)
   {
     myWorld = world;
     setVisible(true);
     isAlive = true;
     share = sh;
     hidden = false;
+    canAnnoy = annoy;
   }
 
   virtual ~Actor()
@@ -27,6 +28,11 @@ public:
   {
     if(!isAlive)
       return;
+  }
+
+  virtual bool getAnnoyed(int damage)
+  {
+      return false;
   }
 
   bool isActorAlive()
@@ -49,6 +55,16 @@ public:
     return share;
   }
 
+  bool canGetAnnoyed()
+  {
+    return canAnnoy;
+  }
+
+  virtual bool receiveGold()
+  {
+    return false;
+  }
+
   void setHidden(bool state)
   {
     hidden = state;
@@ -63,6 +79,7 @@ private:
   bool isAlive;
   bool share;
   bool hidden;
+  bool canAnnoy;
 };
 
 class Goodie : public Actor
@@ -89,7 +106,7 @@ public:
   {
   }
 
-  void virtual doSomething();
+  virtual void doSomething();
 private:
   int ticks;
 };
@@ -106,12 +123,43 @@ public:
   }
 };
 
-class FrackMan : public Actor
+class People : public Actor
 {
 public:
-  FrackMan(StudentWorld* world) : Actor(IID_PLAYER, 30, 60, world, right, 1.0, 0)
+  People(int imageID, int x, int y, StudentWorld* world, Direction dir, int size, int depth, int health)
+  : Actor(imageID, x, y, world, dir, size, depth, true, true)
   {
-    water = 500;
+    myHealth = health;
+  }
+
+  virtual ~People()
+  {
+  }
+
+  virtual bool getAnnoyed(int damage)
+  {
+    return false;
+  }
+
+  int getHealth()
+  {
+    return myHealth;
+  }
+
+  void setHealth(int health)
+  {
+    myHealth = health;
+  }
+private:
+  int myHealth;
+};
+
+class FrackMan : public People
+{
+public:
+  FrackMan(StudentWorld* world) : People(IID_PLAYER, 30, 60, world, right, 1.0, 0, 10)
+  {
+    water = 5;
     sonar = 1;
     gold = 0;
     points = 0;
@@ -122,6 +170,8 @@ public:
   }
 
   virtual void doSomething();
+
+  virtual bool getAnnoyed(int damage);
 
   void addWater();
 
@@ -143,6 +193,86 @@ private:
   int sonar;
   int points;
   int gold;
+};
+
+class Protester : public People
+{
+public:
+  Protester(int imageID, StudentWorld* world, int health);
+
+  virtual ~Protester()
+  {
+  }
+
+  virtual void doSomething()
+  {
+  }
+
+  virtual bool getAnnoyed(int damage);
+
+  bool getState()
+  {
+    return leaveField;
+  }
+
+  void setStateToTrue()
+  {
+    leaveField = true;
+  }
+
+  void setRestTicks(int i)
+  {
+    restTicks = i;
+  }
+
+  int getRestTicks()
+  {
+    return restTicks;
+  }
+
+  int getTicksSinceShouted()
+  {
+    return ticksSinceShouted;
+  }
+
+  void setTicksSinceShouted(int i)
+  {
+    ticksSinceShouted = i;
+  }
+
+  int movedPerpendicular()
+  {
+    return perpendicularTicks;
+  }
+
+  void setMovedPerpendicular(int i)
+  {
+    perpendicularTicks = i;
+  }
+private:
+  bool leaveField;
+  int restTicks;
+  int ticksSinceShouted;
+  int perpendicularTicks;
+};
+
+class RegularProtester : public Protester
+{
+public:
+  RegularProtester(StudentWorld* world) : Protester(IID_PROTESTER, world, 5)
+  {
+    numSquaresToMoveInCurDirection = rand() % 61 + 8;
+  }
+
+  virtual ~RegularProtester()
+  {
+  }
+
+  virtual void doSomething();
+
+  virtual bool receiveGold();
+private:
+  int numSquaresToMoveInCurDirection;
 };
 
 class Boulder : public Actor
