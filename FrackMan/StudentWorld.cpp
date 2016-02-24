@@ -31,13 +31,6 @@ int StudentWorld::init()
 				dirt[i][j] = new Dirt(i, j);
 		}
 	}
-	for(int i = 0; i < VIEW_WIDTH; i++)
-	{
-		for(int j = 0; j < VIEW_HEIGHT; j++)
-		{
-			pathToExit[i][j] = -1;
-		}
-	}
 
 	// FRACKMAN
 	player = new FrackMan(this);
@@ -163,6 +156,8 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
+  layOutShortestPath();
+
 	vector<Actor*>::iterator it;
 	it = actors.begin();
 	while(it != actors.end())
@@ -172,8 +167,6 @@ int StudentWorld::move()
 	}
 
 	player->doSomething();
-
-	layOutShortestPath();
 
 	int G = getLevel() * 25 + 300;
 	int randomNumber = rand() % G + 1;
@@ -515,6 +508,13 @@ bool StudentWorld::pickUpGold(Actor* actor)
 
 void StudentWorld::layOutShortestPath()
 {
+  for(int i = 0; i < VIEW_WIDTH; i++)
+  {
+    for(int j = 0; j < VIEW_HEIGHT; j++)
+    {
+      pathToExit[i][j] = -1;
+    }
+  }
 	queue<Position> q;
 	Position curr;
 	curr.x = 60;
@@ -562,19 +562,23 @@ void StudentWorld::layOutShortestPath()
 
 GraphObject::Direction StudentWorld::getShortestDirection(int x, int y)
 {
-	int shortest = 64;
-    GraphObject::Direction dir = GraphObject::up;
+	int shortest = INT_MAX;
+  GraphObject::Direction dir = GraphObject::up;
+  cout << "UP: " << pathToExit[x][y+1] << endl;
+  cout << "DOWN: " << pathToExit[x][y-1] << endl;
+  cout << "LEFT: " << pathToExit[x+1][y] << endl;
+  cout << "RIGHT: " << pathToExit[x-1][y] << endl;
 	if(y < 60 && pathToExit[x][y+1] >= 0)
 	{
 		shortest = pathToExit[x][y+1];
-        dir = GraphObject::up;
+    dir = GraphObject::up;
 	}
 	if(y > 0 && pathToExit[x][y-1] >= 0)
 	{
 		if(pathToExit[x][y-1] < shortest)
 		{
 			shortest = pathToExit[x][y-1];
-            dir = GraphObject::down;
+      dir = GraphObject::down;
 		}
 	}
 	if(x < 60 && pathToExit[x+1][y] >= 0)
@@ -582,7 +586,7 @@ GraphObject::Direction StudentWorld::getShortestDirection(int x, int y)
 			if(pathToExit[x+1][y] < shortest)
 			{
 				shortest = pathToExit[x+1][y];
-                dir = GraphObject::right;
+        dir = GraphObject::right;
 			}
 	}
 	if(x > 0 && pathToExit[x-1][y] >= 0)
@@ -590,7 +594,7 @@ GraphObject::Direction StudentWorld::getShortestDirection(int x, int y)
 		if(pathToExit[x-1][y] < shortest)
 		{
 			shortest = pathToExit[x-1][y];
-            dir = GraphObject::left;
+      dir = GraphObject::left;
 		}
 	}
 	return dir;
