@@ -1,6 +1,18 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
+void Actor::moveInDirection(Direction dir)
+{
+  if(dir == down)
+    moveTo(getX(), getY()-1);
+  if(dir == up)
+    moveTo(getX(), getY()+1);
+  if(dir == left)
+    moveTo(getX()-1, getY());
+  if(dir == right)
+    moveTo(getX()+1, getY());
+}
+
 Protester::Protester(int imageID, StudentWorld* world, int health)
 : People(imageID, 60, 60, world, left, 1.0, 0, health)
 {
@@ -51,7 +63,7 @@ void FrackMan::doSomething()
           return;
         if(getX() > 0)
         {
-          moveTo(getX()-1, getY());
+          moveInDirection(left);
           getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3, true);
         }
         else
@@ -67,7 +79,7 @@ void FrackMan::doSomething()
           return;
         if(getX() < 60)
         {
-          moveTo(getX()+1, getY());
+          moveInDirection(right);
           getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3, true);
         }
         else
@@ -83,7 +95,7 @@ void FrackMan::doSomething()
           return;
         if(getY() < 60)
         {
-          moveTo(getX(), getY()+1);
+          moveInDirection(up);
           getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3, true);
         }
         else
@@ -99,7 +111,7 @@ void FrackMan::doSomething()
           return;
         if(getY() > 0)
         {
-          moveTo(getX(), getY()-1);
+          moveInDirection(down);
           getWorld()->destroyDirt(getX(), getY(), getX()+3, getY()+3, true);
         }
         else
@@ -265,14 +277,7 @@ void RegularProtester::doSomething()
       Direction dir = getWorld()->getShortestDirection(getX(), getY());
       if(getDirection() != dir)
         setDirection(dir);
-      if(dir == left)
-        moveTo(getX()-1, getY());
-      if(dir == right)
-        moveTo(getX()+1, getY());
-      if(dir == up)
-        moveTo(getX(), getY()+1);
-      if(dir == down)
-        moveTo(getX(), getY()-1);
+      moveInDirection(getDirection());
       int i = 3-getWorld()->getLevel()/4;
       setRestTicks(max(0, i));
       return;
@@ -281,6 +286,7 @@ void RegularProtester::doSomething()
   else
   {
     StudentWorld* world = getWorld();
+    Direction directionOfFrack;
     bool canYellLeft = getDirection() == left && getX() >= world->getFrackX() && getY() == world->getFrackY();
     bool canYellUp = getDirection() == up && getY() <= world->getFrackY() && getX() == world->getFrackX();
     bool canYellRight = getDirection() == right && getX() <= world->getFrackX() && getY() == world->getFrackY();
@@ -297,6 +303,34 @@ void RegularProtester::doSomething()
       }
       else
         setTicksSinceShouted(getTicksSinceShouted()+1);
+    }
+    else if(getWorld()->seeFrack(getX(), getY(), directionOfFrack))
+    {
+      bool canGoToFrack = true;
+      int potentialX = getX();
+      int potentialY = getY();
+      while(getWorld()->getRadius(potentialX, potentialY, getWorld()->getFrackX(), getWorld()->getFrackY()) > 4)
+      {
+        if(!getWorld()->canMove(potentialX, potentialY, directionOfFrack)
+        || getWorld()->touchingBoulder(potentialX, potentialY, directionOfFrack, 3, this))
+        {
+          canGoToFrack = false;
+          break;
+        }
+        if(directionOfFrack == left)
+          potentialX--;
+        if(directionOfFrack == right)
+          potentialX++;
+        if(directionOfFrack == up)
+          potentialY++;
+        if(directionOfFrack == down)
+          potentialY--;
+      }
+      if(canGoToFrack)
+      {
+        setDirection(directionOfFrack);
+        moveInDirection(getDirection());
+      }
     }
     else
     {
@@ -397,14 +431,7 @@ void RegularProtester::doSomething()
       setTicksSinceShouted(getTicksSinceShouted()+1);
       if(getWorld()->canMove(getX(), getY(), getDirection()) && !getWorld()->touchingBoulder(getX(), getY(), getDirection(), 3, this))
       {
-        if(getDirection() == left)
-          moveTo(getX()-1, getY());
-        if(getDirection() == right)
-          moveTo(getX()+1, getY());
-        if(getDirection() == up)
-          moveTo(getX(), getY()+1);
-        if(getDirection() == down)
-          moveTo(getX(), getY()-1);
+        moveInDirection(getDirection());
         numSquaresToMoveInCurDirection--;
       }
       else
@@ -521,14 +548,7 @@ void Squirt::doSomething()
   else
   {
     distance++;
-    if(myDir == up)
-      moveTo(getX(), getY()+1);
-    if(myDir == down)
-      moveTo(getX(), getY()-1);
-    if(myDir == left)
-      moveTo(getX()-1, getY());
-    if(myDir == right)
-      moveTo(getX()+1, getY());
+    moveInDirection(myDir);
   }
 }
 
@@ -558,7 +578,7 @@ void Boulder::doSomething()
     if(getWorld()->annoyFrack(100))
       setAlive(false);
     else if(!myWorld->touchingBoulder(getX(), getY(), down, 3, this) && myWorld->canMove(getX(), getY(), down))
-      moveTo(getX(), getY()-1);
+      moveInDirection(down);
     else
       setAlive(false);
   }

@@ -40,6 +40,8 @@ public:
     return isAlive;
   }
 
+  void moveInDirection(Direction dir);
+
   void setAlive(bool alive)
   {
     isAlive = alive;

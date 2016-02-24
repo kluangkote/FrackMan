@@ -77,6 +77,8 @@ public:
 	void layOutShortestPath();
 
 	GraphObject::Direction getShortestDirection(int x, int y);
+
+    bool seeFrack(int x, int y, GraphObject::Direction& dir);
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT];
 	FrackMan* player;

@@ -364,13 +364,13 @@ bool StudentWorld::canMove(int x, int y, GraphObject::Direction dir)
 
 bool StudentWorld::touchingBoulder(int x, int y, GraphObject::Direction dir, double radiusLimit, Actor* actor)
 {
-    if(dir == GraphObject::left)
-			x--;
-    if(dir == GraphObject::right)
-			x++;
-    if(dir == GraphObject::up)
-			y++;
-    if(dir == GraphObject::down)
+  if(dir == GraphObject::left)
+    x--;
+  if(dir == GraphObject::right)
+		x++;
+  if(dir == GraphObject::up)
+		y++;
+  if(dir == GraphObject::down)
 		y--;
 	for(int i = 0; i < actors.size(); i++)
 	{
@@ -564,10 +564,6 @@ GraphObject::Direction StudentWorld::getShortestDirection(int x, int y)
 {
 	int shortest = INT_MAX;
   GraphObject::Direction dir = GraphObject::up;
-  cout << "UP: " << pathToExit[x][y+1] << endl;
-  cout << "DOWN: " << pathToExit[x][y-1] << endl;
-  cout << "LEFT: " << pathToExit[x+1][y] << endl;
-  cout << "RIGHT: " << pathToExit[x-1][y] << endl;
 	if(y < 60 && pathToExit[x][y+1] >= 0)
 	{
 		shortest = pathToExit[x][y+1];
@@ -598,5 +594,41 @@ GraphObject::Direction StudentWorld::getShortestDirection(int x, int y)
 		}
 	}
 	return dir;
+}
+
+bool StudentWorld::seeFrack(int x, int y, GraphObject::Direction& dir)
+{
+  if(x == getFrackX())
+  {
+    if(y < getFrackY())
+    {
+      dir = GraphObject::up;
+      return true;
+    }
+    if(y > getFrackY())
+    {
+      dir = GraphObject::down;
+      return true;
+    }
+  }
+  else if(y == getFrackY())
+  {
+    if(x < getFrackX())
+    {
+      dir = GraphObject::right;
+      return true;
+    }
+    if(x > getFrackX())
+    {
+      dir = GraphObject::left;
+      return true;
+    }
+  }
+  else
+  {
+    dir = GraphObject::none;
+    return false;
+  }
+  return false;
 }
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp
