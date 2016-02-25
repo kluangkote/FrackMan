@@ -16,6 +16,8 @@ public:
 	StudentWorld(std::string assetDir)
 	 : GameWorld(assetDir)
 	{
+		ticks = 0;
+		numberOfProtesters = 0;
 	}
 
 	virtual ~StudentWorld()
@@ -76,15 +78,22 @@ public:
 
 	void layOutShortestPath();
 
-	GraphObject::Direction getShortestDirection(int x, int y);
+	void findShortestToFrack();
 
-    bool seeFrack(int x, int y, GraphObject::Direction& dir);
+	GraphObject::Direction getShortestDirection(int x, int y, bool hardcore);
+
+  bool seeFrack(int x, int y, GraphObject::Direction& dir);
+
+	int stepsAwayFromFrack(int x, int y);
 private:
 	Dirt* dirt[VIEW_WIDTH][VIEW_HEIGHT];
 	FrackMan* player;
 	vector<Actor*> actors;
 	int barrel;
 	int pathToExit[VIEW_WIDTH][VIEW_HEIGHT];
+	int findFrack[VIEW_WIDTH][VIEW_HEIGHT];
+	int ticks;
+	int numberOfProtesters;
 };
 
 #endif // STUDENTWORLD_H_

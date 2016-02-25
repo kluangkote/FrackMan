@@ -206,9 +206,14 @@ public:
   {
   }
 
-  virtual void doSomething()
+  virtual void doSomething();
+
+  virtual bool hardcoreCalculate()
   {
+    return false;
   }
+
+  bool clearPath(Direction dir);
 
   virtual bool getAnnoyed(int damage);
 
@@ -251,11 +256,22 @@ public:
   {
     perpendicularTicks = i;
   }
+
+  int getNumSquaresToMoveInCurDirection()
+  {
+    return numSquaresToMoveInCurDirection;
+  }
+
+  void setNumSquaresToMoveInCurDirection(int i)
+  {
+    numSquaresToMoveInCurDirection = i;
+  }
 private:
   bool leaveField;
   int restTicks;
   int ticksSinceShouted;
   int perpendicularTicks;
+  int numSquaresToMoveInCurDirection;
 };
 
 class RegularProtester : public Protester
@@ -263,18 +279,33 @@ class RegularProtester : public Protester
 public:
   RegularProtester(StudentWorld* world) : Protester(IID_PROTESTER, world, 5)
   {
-    numSquaresToMoveInCurDirection = rand() % 61 + 8;
   }
 
   virtual ~RegularProtester()
   {
   }
 
-  virtual void doSomething();
+  virtual bool receiveGold();
+
+  virtual bool getAnnoyed(int damage);
+};
+
+class HardcoreProtester : public Protester
+{
+public:
+  HardcoreProtester(StudentWorld* world) : Protester(IID_HARD_CORE_PROTESTER, world, 20)
+  {
+  }
+
+  virtual ~HardcoreProtester()
+  {
+  }
+
+  virtual bool hardcoreCalculate();
 
   virtual bool receiveGold();
-private:
-  int numSquaresToMoveInCurDirection;
+
+  virtual bool getAnnoyed(int damage);
 };
 
 class Boulder : public Actor
