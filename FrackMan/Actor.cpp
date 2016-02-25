@@ -390,6 +390,12 @@ void FrackMan::doSomething()
         gold--;
       }
       break;
+
+      // ESCAPE
+      case KEY_PRESS_ESCAPE:
+      getAnnoyed(100);
+      getWorld()->decLives();
+      break;
     }
   }
 }
@@ -400,6 +406,7 @@ bool FrackMan::getAnnoyed(int damage)
   if(getHealth() <= 0)
   {
     getWorld()->playSound(SOUND_PLAYER_GIVE_UP);
+    setAlive(false);
   }
   return true;
 }
