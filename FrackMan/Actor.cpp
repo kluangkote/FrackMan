@@ -1,6 +1,23 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
+Actor::Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0,
+  bool sh = true, bool annoy = false) : GraphObject(imageID, startX, startY, dir, size, depth)
+{
+  myWorld = world;
+  setVisible(true);
+  isAlive = true;
+  share = sh;
+  hidden = false;
+  canAnnoy = annoy;
+}
+
+void Actor::doSomething()
+{
+  if(!isAlive)
+    return;
+}
+
 void Actor::moveInDirection(Direction dir)
 {
   if(dir == down)
@@ -13,227 +30,63 @@ void Actor::moveInDirection(Direction dir)
     moveTo(getX()+1, getY());
 }
 
-Protester::Protester(int imageID, StudentWorld* world, int health)
-: People(imageID, 60, 60, world, left, 1.0, 0, health)
+void Goodie::doSomething()
 {
-  leaveField = false;
-  int i = 3-getWorld()->getLevel()/4;
-  restTicks = max(0, i);
-  ticksSinceShouted = 15;
-  perpendicularTicks = 0;
-  numSquaresToMoveInCurDirection = rand() % 61 + 8;
+  int frackX = getWorld()->getFrackX();
+  int frackY = getWorld()->getFrackY();
+  if(getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 3)
+  {
+    getWorld()->playSound(mySound);
+    setAlive(false);
+  }
 }
 
-bool Protester::clearPath(Direction directionOfFrack)
+PopUpGoodie::PopUpGoodie(int imageID, int x, int y, StudentWorld* world)
+: Goodie(imageID, x, y , world)
 {
-  bool canGoToFrack = true;
-  int potentialX = getX();
-  int potentialY = getY();
-  while(getWorld()->getRadius(potentialX, potentialY, getWorld()->getFrackX(), getWorld()->getFrackY()) > 4)
-  {
-    if(!getWorld()->canMove(potentialX, potentialY, directionOfFrack)
-    || getWorld()->touchingBoulder(potentialX, potentialY, directionOfFrack, 3, this))
-    {
-      canGoToFrack = false;
-      break;
-    }
-    if(directionOfFrack == left)
-      potentialX--;
-    if(directionOfFrack == right)
-      potentialX++;
-    if(directionOfFrack == up)
-      potentialY++;
-    if(directionOfFrack == down)
-      potentialY--;
-  }
-  if(canGoToFrack)
-    return true;
-  return false;
+  int i = 300-10*getWorld()->getLevel();
+  ticks = max(100, i);
+  pickedUpByFrack = true;
 }
 
-void Protester::doSomething()
+void PopUpGoodie::doSomething()
 {
-  Actor::doSomething();
-  if(getRestTicks() > 1)
+  ticks--;
+  Goodie::doSomething();
+  if(ticks == 0)
   {
-    setRestTicks(getRestTicks()-1);
-    return;
+    pickedUpByFrack = false;
+    setAlive(false);
   }
-  if(getState())
-  {
-    if(getX() == 60 && getY() == 60)
-      setAlive(false);
-    else
-    {
-      Direction dir = getWorld()->getShortestDirection(getX(), getY(), false);
-      if(getDirection() != dir)
-        setDirection(dir);
-      moveInDirection(getDirection());
-      int i = 3-getWorld()->getLevel()/4;
-      setRestTicks(max(0, i));
-      return;
-    }
-  }
-  else
-  {
-    StudentWorld* world = getWorld();
-    Direction directionOfFrack;
-    bool canYellLeft = getDirection() == left && getX() >= world->getFrackX() && getY() == world->getFrackY();
-    bool canYellUp = getDirection() == up && getY() <= world->getFrackY() && getX() == world->getFrackX();
-    bool canYellRight = getDirection() == right && getX() <= world->getFrackX() && getY() == world->getFrackY();
-    bool canYellDown = getDirection() == down && getY() >= world->getFrackY() && getX() == world->getFrackX();
-    if(world->getRadius(getX(), getY(), world->getFrackX(), world->getFrackY()) <= 4
-    && (canYellLeft || canYellUp || canYellRight || canYellDown))
-    {
-      if(getTicksSinceShouted() >= 15)
-      {
-        setTicksSinceShouted(0);
-        getWorld()->playSound(SOUND_PROTESTER_YELL);
-        getWorld()->annoyFrack(2);
-        return;
-      }
-      else
-      setTicksSinceShouted(getTicksSinceShouted()+1);
-    }
-    else if(world->getRadius(getX(), getY(), world->getFrackX(), world->getFrackY()) > 4 && hardcoreCalculate())
-    {
-      int i = 3-getWorld()->getLevel()/4;
-      setRestTicks(max(0, i));
-      return;
-    }
-    else if(getWorld()->seeFrack(getX(), getY(), directionOfFrack) && clearPath(directionOfFrack))
-    {
-      setDirection(directionOfFrack);
-      moveInDirection(getDirection());
-    }
-    else
-    {
-      if(getNumSquaresToMoveInCurDirection() <= 0)
-      {
-        bool pickedNewDirection = false;
-        while(!pickedNewDirection)
-        {
-          int newDirection = rand() % 4;
-          if(newDirection == 0)
-          {
-            if(getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
-            {
-              pickedNewDirection = true;
-              setDirection(up);
-            }
-          }
-          if(newDirection == 1)
-          {
-            if(getWorld()->canMove(getX(), getY(), down) && !getWorld()->touchingBoulder(getX(), getY(), down, 3, this))
-            {
-              pickedNewDirection = true;
-              setDirection(down);
-            }
-          }
-          if(newDirection == 2)
-          {
-            if(getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
-            {
-              pickedNewDirection = true;
-              setDirection(left);
-            }
-          }
-          if(newDirection == 3)
-          {
-            if(getWorld()->canMove(getX(), getY(), right) && !getWorld()->touchingBoulder(getX(), getY(), right, 3, this))
-            {
-              pickedNewDirection = true;
-              setDirection(right);
-            }
-          }
-        }
-        setNumSquaresToMoveInCurDirection(rand() % 61 + 8);
-      }
-      else
-      {
-        if(getDirection() == right || getDirection() == left)
-        {
-          if(((getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
-          || (getWorld()->canMove(getX(), getY(), down) && !getWorld()->touchingBoulder(getX(), getY(), down, 3, this)))
-          && movedPerpendicular() >= 200)
-          {
-            setMovedPerpendicular(0);
-            if(getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this)
-            && getWorld()->canMove(getX(), getY(), down) && !getWorld()->touchingBoulder(getX(), getY(), down, 3, this))
-            {
-              int dir = rand() % 2;
-              if(dir == 0)
-              setDirection(up);
-              else
-              setDirection(down);
-            }
-            else if(getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
-            setDirection(up);
-            else
-            setDirection(down);
-            setNumSquaresToMoveInCurDirection(rand() % 61 + 8);
-          }
-          else
-          setMovedPerpendicular(movedPerpendicular()+1);
-        }
-        if(getDirection() == up || getDirection() == down)
-        {
-          if(((getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
-          || (getWorld()->canMove(getX(), getY(), right) && !getWorld()->touchingBoulder(getX(), getY(), right, 3, this)))
-          && movedPerpendicular() >= 200)
-          {
-            setMovedPerpendicular(0);
-            if(getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this)
-            && getWorld()->canMove(getX(), getY(), right) && !getWorld()->touchingBoulder(getX(), getY(), right, 3, this))
-            {
-              int dir = rand() % 2;
-              if(dir == 0)
-              setDirection(left);
-              else
-              setDirection(right);
-            }
-            else if(getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
-            setDirection(left);
-            else
-            setDirection(right);
-            setNumSquaresToMoveInCurDirection(rand() % 61 + 8);
-          }
-          else
-          setMovedPerpendicular(movedPerpendicular()+1);
-        }
-      }
-      setTicksSinceShouted(getTicksSinceShouted()+1);
-      if(getWorld()->canMove(getX(), getY(), getDirection()) && !getWorld()->touchingBoulder(getX(), getY(), getDirection(), 3, this))
-      {
-        moveInDirection(getDirection());
-        setNumSquaresToMoveInCurDirection(getNumSquaresToMoveInCurDirection()+1);
-      }
-      else
-      setNumSquaresToMoveInCurDirection(0);
-    }
-  }
-  int i = 3-getWorld()->getLevel()/4;
-  setRestTicks(max(0, i));
 }
 
-void Protester::getAnnoyed(int damage)
+bool PopUpGoodie::pickedUp()
 {
-  setHealth(getHealth()-damage);
-  if(getHealth() <= 0)
+  return pickedUpByFrack;
+}
+
+Buried::Buried(int imageID, int x, int y, StudentWorld* world, int sound = SOUND_GOT_GOODIE) : Goodie(imageID, x, y, world, sound)
+{
+  setVisible(false);
+  setHidden(true);
+}
+
+void Buried::showSelf()
+{
+  int frackX = getWorld()->getFrackX();
+  int frackY = getWorld()->getFrackY();
+  if(isHidden() && getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 4)
   {
-    if(!getState())
-      getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
-    setStateToTrue();
-    setRestTicks(0);
-    if(damage == 100)
-      getWorld()->increaseScore(500);
+    setVisible(true);
+    setHidden(false);
   }
-  else
-  {
-    getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
-    int i = 100-getWorld()->getLevel()*10;
-    setRestTicks(max(50, i));
-  }
+}
+
+FrackMan::FrackMan(StudentWorld* world) : People(IID_PLAYER, 30, 60, world, right, 1.0, 0, 10)
+{
+  water = 5;
+  sonar = 1;
+  gold = 0;
 }
 
 void FrackMan::doSomething()
@@ -439,6 +292,231 @@ int FrackMan::getGold()
   return gold;
 }
 
+Protester::Protester(int imageID, StudentWorld* world, int health)
+: People(imageID, 60, 60, world, left, 1.0, 0, health)
+{
+  leaveField = false;
+  int i = 3-getWorld()->getLevel()/4;
+  restTicks = max(0, i);
+  ticksSinceShouted = 15;
+  perpendicularTicks = 0;
+  numSquaresToMoveInCurDirection = rand() % 61 + 8;
+}
+
+bool Protester::clearPath(Direction directionOfFrack)
+{
+  bool canGoToFrack = true;
+  int potentialX = getX();
+  int potentialY = getY();
+  while(getWorld()->getRadius(potentialX, potentialY, getWorld()->getFrackX(), getWorld()->getFrackY()) > 4)
+  {
+    if(!getWorld()->canMove(potentialX, potentialY, directionOfFrack)
+    || getWorld()->touchingBoulder(potentialX, potentialY, directionOfFrack, 3, this))
+    {
+      canGoToFrack = false;
+      break;
+    }
+    if(directionOfFrack == left)
+      potentialX--;
+    if(directionOfFrack == right)
+      potentialX++;
+    if(directionOfFrack == up)
+      potentialY++;
+    if(directionOfFrack == down)
+      potentialY--;
+  }
+  if(canGoToFrack)
+    return true;
+  return false;
+}
+
+void Protester::doSomething()
+{
+  Actor::doSomething();
+  if(getRestTicks() > 1)
+  {
+    setRestTicks(getRestTicks()-1);
+    return;
+  }
+  if(getState())
+  {
+    if(getX() == 60 && getY() == 60)
+      setAlive(false);
+    else
+    {
+      Direction dir = getWorld()->getShortestDirection(getX(), getY(), false);
+      if(getDirection() != dir)
+        setDirection(dir);
+      moveInDirection(getDirection());
+      int i = 3-getWorld()->getLevel()/4;
+      setRestTicks(max(0, i));
+      return;
+    }
+  }
+  else
+  {
+    StudentWorld* world = getWorld();
+    Direction directionOfFrack;
+    bool canYellLeft = getDirection() == left && getX() >= world->getFrackX() && getY() == world->getFrackY();
+    bool canYellUp = getDirection() == up && getY() <= world->getFrackY() && getX() == world->getFrackX();
+    bool canYellRight = getDirection() == right && getX() <= world->getFrackX() && getY() == world->getFrackY();
+    bool canYellDown = getDirection() == down && getY() >= world->getFrackY() && getX() == world->getFrackX();
+    if(world->getRadius(getX(), getY(), world->getFrackX(), world->getFrackY()) <= 4
+    && (canYellLeft || canYellUp || canYellRight || canYellDown))
+    {
+      if(getTicksSinceShouted() >= 15)
+      {
+        setTicksSinceShouted(0);
+        getWorld()->playSound(SOUND_PROTESTER_YELL);
+        getWorld()->annoyFrack(2);
+        int i = 3-getWorld()->getLevel()/4;
+        setRestTicks(max(0, i));
+        return;
+      }
+      else
+        setTicksSinceShouted(getTicksSinceShouted()+1);
+    }
+    else if(world->getRadius(getX(), getY(), world->getFrackX(), world->getFrackY()) > 4 && hardcoreCalculate())
+    {
+      int i = 3-getWorld()->getLevel()/4;
+      setRestTicks(max(0, i));
+      return;
+    }
+    else if(getWorld()->seeFrack(getX(), getY(), directionOfFrack) && clearPath(directionOfFrack))
+    {
+      setDirection(directionOfFrack);
+      moveInDirection(getDirection());
+    }
+    else
+    {
+      if(getNumSquaresToMoveInCurDirection() <= 0)
+      {
+        bool pickedNewDirection = false;
+        while(!pickedNewDirection)
+        {
+          int newDirection = rand() % 4;
+          if(newDirection == 0)
+          {
+            if(getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
+            {
+              pickedNewDirection = true;
+              setDirection(up);
+            }
+          }
+          if(newDirection == 1)
+          {
+            if(getWorld()->canMove(getX(), getY(), down) && !getWorld()->touchingBoulder(getX(), getY(), down, 3, this))
+            {
+              pickedNewDirection = true;
+              setDirection(down);
+            }
+          }
+          if(newDirection == 2)
+          {
+            if(getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
+            {
+              pickedNewDirection = true;
+              setDirection(left);
+            }
+          }
+          if(newDirection == 3)
+          {
+            if(getWorld()->canMove(getX(), getY(), right) && !getWorld()->touchingBoulder(getX(), getY(), right, 3, this))
+            {
+              pickedNewDirection = true;
+              setDirection(right);
+            }
+          }
+        }
+        setNumSquaresToMoveInCurDirection(rand() % 61 + 8);
+      }
+      else
+      {
+        if(getDirection() == right || getDirection() == left)
+        {
+          if(((getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
+          || (getWorld()->canMove(getX(), getY(), down) && !getWorld()->touchingBoulder(getX(), getY(), down, 3, this)))
+          && movedPerpendicular() >= 200)
+          {
+            setMovedPerpendicular(0);
+            if(getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this)
+            && getWorld()->canMove(getX(), getY(), down) && !getWorld()->touchingBoulder(getX(), getY(), down, 3, this))
+            {
+              int dir = rand() % 2;
+              if(dir == 0)
+              setDirection(up);
+              else
+              setDirection(down);
+            }
+            else if(getWorld()->canMove(getX(), getY(), up) && !getWorld()->touchingBoulder(getX(), getY(), up, 3, this))
+            setDirection(up);
+            else
+            setDirection(down);
+            setNumSquaresToMoveInCurDirection(rand() % 61 + 8);
+          }
+          else
+          setMovedPerpendicular(movedPerpendicular()+1);
+        }
+        if(getDirection() == up || getDirection() == down)
+        {
+          if(((getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
+          || (getWorld()->canMove(getX(), getY(), right) && !getWorld()->touchingBoulder(getX(), getY(), right, 3, this)))
+          && movedPerpendicular() >= 200)
+          {
+            setMovedPerpendicular(0);
+            if(getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this)
+            && getWorld()->canMove(getX(), getY(), right) && !getWorld()->touchingBoulder(getX(), getY(), right, 3, this))
+            {
+              int dir = rand() % 2;
+              if(dir == 0)
+              setDirection(left);
+              else
+              setDirection(right);
+            }
+            else if(getWorld()->canMove(getX(), getY(), left) && !getWorld()->touchingBoulder(getX(), getY(), left, 3, this))
+            setDirection(left);
+            else
+            setDirection(right);
+            setNumSquaresToMoveInCurDirection(rand() % 61 + 8);
+          }
+          else
+          setMovedPerpendicular(movedPerpendicular()+1);
+        }
+      }
+      setTicksSinceShouted(getTicksSinceShouted()+1);
+      if(getWorld()->canMove(getX(), getY(), getDirection()) && !getWorld()->touchingBoulder(getX(), getY(), getDirection(), 3, this))
+      {
+        moveInDirection(getDirection());
+        setNumSquaresToMoveInCurDirection(getNumSquaresToMoveInCurDirection()+1);
+      }
+      else
+      setNumSquaresToMoveInCurDirection(0);
+    }
+  }
+  int i = 3-getWorld()->getLevel()/4;
+  setRestTicks(max(0, i));
+}
+
+void Protester::getAnnoyed(int damage)
+{
+  setHealth(getHealth()-damage);
+  if(getHealth() <= 0)
+  {
+    if(!getState())
+      getWorld()->playSound(SOUND_PROTESTER_GIVE_UP);
+    setStateToTrue();
+    setRestTicks(0);
+    if(damage == 100)
+      getWorld()->increaseScore(500);
+  }
+  else
+  {
+    getWorld()->playSound(SOUND_PROTESTER_ANNOYED);
+    int i = 100-getWorld()->getLevel()*10;
+    setRestTicks(max(50, i));
+  }
+}
+
 void RegularProtester::receiveGold()
 {
   getWorld()->increaseScore(25);
@@ -483,49 +561,41 @@ bool HardcoreProtester::hardcoreCalculate()
   return false;
 }
 
-void Goodie::doSomething()
+Boulder::Boulder(int x, int y, StudentWorld* world) : Actor(IID_BOULDER, x, y, world, down, 1.0, 1, false)
 {
-  int frackX = getWorld()->getFrackX();
-  int frackY = getWorld()->getFrackY();
-  if(getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 3)
+  state = "stable";
+  countTicks = 0;
+}
+
+void Boulder::doSomething()
+{
+  Actor::doSomething();
+  StudentWorld* myWorld = getWorld();
+  if(state == "stable")
   {
-    getWorld()->playSound(mySound);
-    setAlive(false);
+    if(myWorld->canMove(getX(), getY(), down))
+      state = "waiting";
+    else
+      return;
   }
-}
-
-PopUpGoodie::PopUpGoodie(int imageID, int x, int y, StudentWorld* world)
-: Goodie(imageID, x, y , world)
-{
-  int i = 300-10*getWorld()->getLevel();
-  ticks = max(100, i);
-  pickedUpByFrack = true;
-}
-
-void PopUpGoodie::doSomething()
-{
-  ticks--;
-  Goodie::doSomething();
-  if(ticks == 0)
+  if(state == "waiting")
   {
-    pickedUpByFrack = false;
-    setAlive(false);
+    countTicks++;
+    if(countTicks == 30)
+    {
+      state = "falling";
+      getWorld()->playSound(SOUND_FALLING_ROCK);
+    }
   }
-}
-
-bool PopUpGoodie::pickedUp()
-{
-  return pickedUpByFrack;
-}
-
-void Buried::showSelf()
-{
-  int frackX = getWorld()->getFrackX();
-  int frackY = getWorld()->getFrackY();
-  if(isHidden() && getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 4)
+  if(state == "falling")
   {
-    setVisible(true);
-    setHidden(false);
+    getWorld()->annoyProtesters(this, 100);
+    if(getWorld()->annoyFrack(100))
+      setAlive(false);
+    else if(!myWorld->touchingBoulder(getX(), getY(), down, 3, this) && myWorld->canMove(getX(), getY(), down))
+      moveInDirection(down);
+    else
+      setAlive(false);
   }
 }
 
@@ -560,6 +630,18 @@ void OilBarrel::doSomething()
   }
 }
 
+GoldNugget::GoldNugget(int startX, int startY, bool bribe, StudentWorld* world) : Buried(IID_GOLD, startX, startY, world)
+{
+  myBribe = bribe;
+  if(myBribe)
+  {
+    setVisible(true);
+    ticks = 100;
+  }
+  else
+    ticks = -1;
+}
+
 void GoldNugget::doSomething()
 {
   if(!myBribe)
@@ -587,6 +669,12 @@ void GoldNugget::doSomething()
   }
 }
 
+Squirt::Squirt(int x, int y, Direction dir, StudentWorld* world) : Actor(IID_WATER_SPURT, x, y, world, dir, 1.0, 1)
+{
+  myDir = dir;
+  distance = 0;
+}
+
 void Squirt::doSomething()
 {
   if(distance == 4)
@@ -604,37 +692,5 @@ void Squirt::doSomething()
   {
     distance++;
     moveInDirection(myDir);
-  }
-}
-
-void Boulder::doSomething()
-{
-  Actor::doSomething();
-  StudentWorld* myWorld = getWorld();
-  if(state == "stable")
-  {
-    if(myWorld->canMove(getX(), getY(), down))
-      state = "waiting";
-    else
-      return;
-  }
-  if(state == "waiting")
-  {
-    countTicks++;
-    if(countTicks == 30)
-    {
-      state = "falling";
-      getWorld()->playSound(SOUND_FALLING_ROCK);
-    }
-  }
-  if(state == "falling")
-  {
-    getWorld()->annoyProtesters(this, 100);
-    if(getWorld()->annoyFrack(100))
-      setAlive(false);
-    else if(!myWorld->touchingBoulder(getX(), getY(), down, 3, this) && myWorld->canMove(getX(), getY(), down))
-      moveInDirection(down);
-    else
-      setAlive(false);
   }
 }

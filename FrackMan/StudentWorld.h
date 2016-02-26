@@ -13,24 +13,9 @@ using namespace std;
 class StudentWorld : public GameWorld
 {
 public:
-	StudentWorld(std::string assetDir)
-	 : GameWorld(assetDir)
-	{
-		ticks = 0;
-		numberOfProtesters = 0;
-	}
+	StudentWorld(std::string assetDir);
 
-	virtual ~StudentWorld()
-	{
-		delete player;
-		for(int i = 0; i < VIEW_WIDTH; i++)
-		{
-			for(int j = 0; j < VIEW_HEIGHT-4; j++)
-			{
-				delete dirt[i][j];
-			}
-		}
-	}
+	virtual ~StudentWorld();
 
 	virtual int init();
 
@@ -73,10 +58,6 @@ public:
 	bool annoyProtesters(Actor* actor, int damage);
 
 	bool pickUpGold(Actor* actor);
-
-	//void layOutShortestPath();
-
-	//void findShortestToFrack();
 
 	void findShortestPath(int destX, int destY, int grid[][VIEW_HEIGHT]);
 

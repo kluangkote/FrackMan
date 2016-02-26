@@ -12,9 +12,27 @@ struct Position
     int y;
 };
 
+StudentWorld::StudentWorld(std::string assetDir) : GameWorld(assetDir)
+{
+  ticks = 0;
+  numberOfProtesters = 0;
+}
+
 GameWorld* createStudentWorld(string assetDir)
 {
 	return new StudentWorld(assetDir);
+}
+
+StudentWorld::~StudentWorld()
+{
+  delete player;
+  for(int i = 0; i < VIEW_WIDTH; i++)
+  {
+    for(int j = 0; j < VIEW_HEIGHT-4; j++)
+    {
+      delete dirt[i][j];
+    }
+  }
 }
 
 int StudentWorld::init()
