@@ -439,13 +439,12 @@ int FrackMan::getGold()
   return gold;
 }
 
-bool RegularProtester::receiveGold()
+void RegularProtester::receiveGold()
 {
   getWorld()->increaseScore(25);
   getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
   setHealth(0);
   setStateToTrue();
-  return true;
 }
 
 void RegularProtester::getAnnoyed(int damage)
@@ -455,13 +454,12 @@ void RegularProtester::getAnnoyed(int damage)
     getWorld()->increaseScore(100);
 }
 
-bool HardcoreProtester::receiveGold()
+void HardcoreProtester::receiveGold()
 {
   getWorld()->increaseScore(50);
   getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
   int i = 100-getWorld()->getLevel()*10;
   setRestTicks(max(50, i));
-  return true;
 }
 
 void HardcoreProtester::getAnnoyed(int damage)
@@ -501,6 +499,7 @@ PopUpGoodie::PopUpGoodie(int imageID, int x, int y, StudentWorld* world)
 {
   int i = 300-10*getWorld()->getLevel();
   ticks = max(100, i);
+  pickedUpByFrack = true;
 }
 
 void PopUpGoodie::doSomething()
@@ -508,7 +507,15 @@ void PopUpGoodie::doSomething()
   ticks--;
   Goodie::doSomething();
   if(ticks == 0)
+  {
+    pickedUpByFrack = false;
     setAlive(false);
+  }
+}
+
+bool PopUpGoodie::pickedUp()
+{
+  return pickedUpByFrack;
 }
 
 void Buried::showSelf()
@@ -519,24 +526,23 @@ void Buried::showSelf()
   {
     setVisible(true);
     setHidden(false);
-    return;
   }
 }
 
 void WaterPool::doSomething()
 {
-    PopUpGoodie::doSomething();
-    if(!isActorAlive())
-    {
-      getWorld()->increaseScore(100);
-      getWorld()->addWaterToGun();
-    }
+  PopUpGoodie::doSomething();
+  if(!isActorAlive() && pickedUp())
+  {
+    getWorld()->increaseScore(100);
+    getWorld()->addWaterToGun();
+  }
 }
 
 void SonarKit::doSomething()
 {
   PopUpGoodie::doSomething();
-  if(!isActorAlive())
+  if(!isActorAlive() && pickedUp())
   {
     getWorld()->increaseScore(75);
     getWorld()->addSonarKit();

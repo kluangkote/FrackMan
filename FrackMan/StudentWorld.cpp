@@ -134,35 +134,6 @@ int StudentWorld::init()
 	return GWSTATUS_CONTINUE_GAME;
 }
 
-// void findSpot(int numberOfItems)
-// {
-// 	int G = max(numberOfItems, 2);
-// 	while(G > 0)
-// 	{
-// 		bool shouldAdd = true;
-// 		int x = rand() % 61;
-// 		int y = rand() % 61;
-// 		while(x >= 27 && x <= 33)
-// 		{
-// 			x = rand() % 61;
-// 			y = rand() % 61;
-// 		}
-// 		for(int i = 0; i < actors.size(); i++)
-// 		{
-// 			if(getRadius(x, y, actors[i]->getX(), actors[i]->getY()) <= 6)
-// 			{
-// 				shouldAdd = false;
-// 				break;
-// 			}
-// 		}
-// 		if(shouldAdd)
-// 		{
-// 			actors.push_back(new GoldNugget(x, y, this));
-// 			G--;
-// 		}
-// 	}
-// }
-
 int StudentWorld::move()
 {
 	vector<Actor*>::iterator it;
@@ -481,7 +452,7 @@ bool StudentWorld::annoyFrack(int damage)
 {
 	if(damage == 100)
 	{
-		if(touchingBoulder(getFrackX(), getFrackY(), player->getDirection(), 3, player))
+    if(touchingBoulder(getFrackX(), getFrackY(), GraphObject::none, 3, player))
 		{
 			player->getAnnoyed(damage);
 			decLives();
@@ -582,114 +553,6 @@ void StudentWorld::findShortestPath(int x, int y, int grid[][VIEW_HEIGHT])
 		}
 	}
 }
-
-// void StudentWorld::findShortestToFrack()
-// {
-//   for(int i = 0; i < VIEW_WIDTH; i++)
-//   {
-//     for(int j = 0; j < VIEW_HEIGHT; j++)
-//     {
-//       findFrack[i][j] = -1;
-//     }
-//   }
-// 	queue<Position> q;
-// 	Position curr;
-// 	curr.x = getFrackX();
-// 	curr.y = getFrackY();
-// 	q.push(curr);
-// 	findFrack[curr.x][curr.y] = 0;
-// 	while(!q.empty())
-// 	{
-// 		curr = q.front();
-// 		q.pop();
-//     if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && findFrack[curr.x][curr.y+1] < 0)
-// 		{
-// 			Position north;
-// 			north.x = curr.x;
-// 			north.y = curr.y+1;
-// 			q.push(north);
-// 			findFrack[north.x][north.y] = findFrack[curr.x][curr.y] + 1;
-// 		}
-//   	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && findFrack[curr.x+1][curr.y] < 0)
-// 		{
-// 			Position east;
-// 			east.x = curr.x+1;
-// 			east.y = curr.y;
-// 			q.push(east);
-// 			findFrack[east.x][east.y] = findFrack[curr.x][curr.y] + 1;
-// 		}
-//     if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && findFrack[curr.x][curr.y-1] < 0)
-// 		{
-// 			Position south;
-// 			south.x = curr.x;
-// 			south.y = curr.y-1;
-// 			q.push(south);
-// 			findFrack[south.x][south.y] = findFrack[curr.x][curr.y] + 1;
-// 		}
-//     if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && findFrack[curr.x-1][curr.y] < 0)
-// 		{
-// 			Position west;
-// 			west.x = curr.x-1;
-//       west.y = curr.y;
-// 			q.push(west);
-// 			findFrack[west.x][west.y] = findFrack[curr.x][curr.y] + 1;
-// 		}
-// 	}
-// }
-//
-// void StudentWorld::layOutShortestPath()
-// {
-//   for(int i = 0; i < VIEW_WIDTH; i++)
-//   {
-//     for(int j = 0; j < VIEW_HEIGHT; j++)
-//     {
-//       pathToExit[i][j] = -1;
-//     }
-//   }
-// 	queue<Position> q;
-// 	Position curr;
-// 	curr.x = 60;
-// 	curr.y = 60;
-// 	q.push(curr);
-// 	pathToExit[curr.x][curr.y] = 0;
-// 	while(!q.empty())
-// 	{
-// 		curr = q.front();
-// 		q.pop();
-//     if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && pathToExit[curr.x][curr.y+1] < 0)
-// 		{
-// 			Position north;
-// 			north.x = curr.x;
-// 			north.y = curr.y+1;
-// 			q.push(north);
-// 			pathToExit[north.x][north.y] = pathToExit[curr.x][curr.y] + 1;
-// 		}
-//   	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && pathToExit[curr.x+1][curr.y] < 0)
-// 		{
-// 			Position east;
-// 			east.x = curr.x+1;
-// 			east.y = curr.y;
-// 			q.push(east);
-// 			pathToExit[east.x][east.y] = pathToExit[curr.x][curr.y] + 1;
-// 		}
-//     if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && pathToExit[curr.x][curr.y-1] < 0)
-// 		{
-// 			Position south;
-// 			south.x = curr.x;
-// 			south.y = curr.y-1;
-// 			q.push(south);
-// 			pathToExit[south.x][south.y] = pathToExit[curr.x][curr.y] + 1;
-// 		}
-//     if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && pathToExit[curr.x-1][curr.y] < 0)
-// 		{
-// 			Position west;
-// 			west.x = curr.x-1;
-//             west.y = curr.y;
-// 			q.push(west);
-// 			pathToExit[west.x][west.y] = pathToExit[curr.x][curr.y] + 1;
-// 		}
-// 	}
-// }
 
 GraphObject::Direction StudentWorld::getShortestDirection(int x, int y, bool hardcore)
 {

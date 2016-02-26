@@ -61,9 +61,8 @@ public:
     return canAnnoy;
   }
 
-  virtual bool receiveGold()
+  virtual void receiveGold()
   {
-    return false;
   }
 
   void setHidden(bool state)
@@ -111,8 +110,11 @@ public:
   }
 
   virtual void doSomething();
+
+  bool pickedUp();
 private:
   int ticks;
+  bool pickedUpByFrack;
 };
 
 class Dirt : public Actor
@@ -276,7 +278,7 @@ public:
   {
   }
 
-  virtual bool receiveGold();
+  virtual void receiveGold();
 
   virtual void getAnnoyed(int damage);
 };
@@ -294,7 +296,7 @@ public:
 
   virtual bool hardcoreCalculate();
 
-  virtual bool receiveGold();
+  virtual void receiveGold();
 
   virtual void getAnnoyed(int damage);
 };
@@ -361,11 +363,6 @@ public:
   {
   }
 
-  virtual void doSomething()
-  {
-    Actor::doSomething();
-  }
-
   void showSelf();
 };
 
@@ -378,6 +375,7 @@ public:
     virtual ~OilBarrel()
     {
     }
+    
     virtual void doSomething();
 };
 

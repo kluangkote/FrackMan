@@ -15,7 +15,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "257"
             endingLineNumber = "257"
-            landmarkName = "StudentWorld::move()"
+            landmarkName = "StudentWorld::setDisplayText()"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
