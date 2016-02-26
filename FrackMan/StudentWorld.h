@@ -60,8 +60,6 @@ public:
 
 	void barrelFound();
 
-	void addPointsToFrack(int points);
-
 	void addGold();
 
 	void sonar();
@@ -76,11 +74,17 @@ public:
 
 	bool pickUpGold(Actor* actor);
 
-	void layOutShortestPath();
+	//void layOutShortestPath();
 
-	void findShortestToFrack();
+	//void findShortestToFrack();
+
+	void findShortestPath(int destX, int destY, int grid[][VIEW_HEIGHT]);
 
 	GraphObject::Direction getShortestDirection(int x, int y, bool hardcore);
+
+	GraphObject::Direction directionToFrack(int x, int y);
+
+	GraphObject::Direction directionToExit(int x, int y);
 
   bool seeFrack(int x, int y, GraphObject::Direction& dir);
 

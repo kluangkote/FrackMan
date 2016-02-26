@@ -190,7 +190,7 @@ int StudentWorld::move()
     numberOfProtesters++;
   }
   if(ticks > max(25, x))
-    ticks = max(25, x);
+    ticks = 0;
   else
     ticks++;
 
@@ -279,7 +279,7 @@ void StudentWorld::cleanUp()
 
 void StudentWorld::setDisplayText()
 {
-	int score = player->getPoints();
+	int score = getScore();
 	int level = getLevel();
 	int lives = getLives();
 	int health = player->getHealth()*10;
@@ -441,11 +441,6 @@ void StudentWorld::barrelFound()
 	barrel--;
 }
 
-void StudentWorld::addPointsToFrack(int points)
-{
-	player->addPoints(points);
-}
-
 void StudentWorld::addGold()
 {
 	player->addGold();
@@ -534,184 +529,252 @@ bool StudentWorld::pickUpGold(Actor* actor)
 	return false;
 }
 
-void StudentWorld::findShortestToFrack()
+void StudentWorld::findShortestPath(int x, int y, int grid[][VIEW_HEIGHT])
 {
   for(int i = 0; i < VIEW_WIDTH; i++)
   {
     for(int j = 0; j < VIEW_HEIGHT; j++)
     {
-      findFrack[i][j] = -1;
+      grid[i][j] = -1;
     }
   }
 	queue<Position> q;
 	Position curr;
-	curr.x = getFrackX();
-	curr.y = getFrackY();
+	curr.x = x;
+	curr.y = y;
 	q.push(curr);
-	findFrack[curr.x][curr.y] = 0;
+	grid[curr.x][curr.y] = 0;
 	while(!q.empty())
 	{
 		curr = q.front();
 		q.pop();
-    if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && findFrack[curr.x][curr.y+1] < 0)
+    if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && grid[curr.x][curr.y+1] < 0)
 		{
 			Position north;
 			north.x = curr.x;
 			north.y = curr.y+1;
 			q.push(north);
-			findFrack[north.x][north.y] = findFrack[curr.x][curr.y] + 1;
+			grid[north.x][north.y] = grid[curr.x][curr.y] + 1;
 		}
-  	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && findFrack[curr.x+1][curr.y] < 0)
+  	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && grid[curr.x+1][curr.y] < 0)
 		{
 			Position east;
 			east.x = curr.x+1;
 			east.y = curr.y;
 			q.push(east);
-			findFrack[east.x][east.y] = findFrack[curr.x][curr.y] + 1;
+			grid[east.x][east.y] = grid[curr.x][curr.y] + 1;
 		}
-    if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && findFrack[curr.x][curr.y-1] < 0)
+    if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && grid[curr.x][curr.y-1] < 0)
 		{
 			Position south;
 			south.x = curr.x;
 			south.y = curr.y-1;
 			q.push(south);
-			findFrack[south.x][south.y] = findFrack[curr.x][curr.y] + 1;
+			grid[south.x][south.y] = grid[curr.x][curr.y] + 1;
 		}
-    if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && findFrack[curr.x-1][curr.y] < 0)
+    if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && grid[curr.x-1][curr.y] < 0)
 		{
 			Position west;
 			west.x = curr.x-1;
       west.y = curr.y;
 			q.push(west);
-			findFrack[west.x][west.y] = findFrack[curr.x][curr.y] + 1;
+			grid[west.x][west.y] = grid[curr.x][curr.y] + 1;
 		}
 	}
 }
 
-void StudentWorld::layOutShortestPath()
-{
-  for(int i = 0; i < VIEW_WIDTH; i++)
-  {
-    for(int j = 0; j < VIEW_HEIGHT; j++)
-    {
-      pathToExit[i][j] = -1;
-    }
-  }
-	queue<Position> q;
-	Position curr;
-	curr.x = 60;
-	curr.y = 60;
-	q.push(curr);
-	pathToExit[curr.x][curr.y] = 0;
-	while(!q.empty())
-	{
-		curr = q.front();
-		q.pop();
-    if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && pathToExit[curr.x][curr.y+1] < 0)
-		{
-			Position north;
-			north.x = curr.x;
-			north.y = curr.y+1;
-			q.push(north);
-			pathToExit[north.x][north.y] = pathToExit[curr.x][curr.y] + 1;
-		}
-  	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && pathToExit[curr.x+1][curr.y] < 0)
-		{
-			Position east;
-			east.x = curr.x+1;
-			east.y = curr.y;
-			q.push(east);
-			pathToExit[east.x][east.y] = pathToExit[curr.x][curr.y] + 1;
-		}
-    if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && pathToExit[curr.x][curr.y-1] < 0)
-		{
-			Position south;
-			south.x = curr.x;
-			south.y = curr.y-1;
-			q.push(south);
-			pathToExit[south.x][south.y] = pathToExit[curr.x][curr.y] + 1;
-		}
-    if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && pathToExit[curr.x-1][curr.y] < 0)
-		{
-			Position west;
-			west.x = curr.x-1;
-            west.y = curr.y;
-			q.push(west);
-			pathToExit[west.x][west.y] = pathToExit[curr.x][curr.y] + 1;
-		}
-	}
-}
+// void StudentWorld::findShortestToFrack()
+// {
+//   for(int i = 0; i < VIEW_WIDTH; i++)
+//   {
+//     for(int j = 0; j < VIEW_HEIGHT; j++)
+//     {
+//       findFrack[i][j] = -1;
+//     }
+//   }
+// 	queue<Position> q;
+// 	Position curr;
+// 	curr.x = getFrackX();
+// 	curr.y = getFrackY();
+// 	q.push(curr);
+// 	findFrack[curr.x][curr.y] = 0;
+// 	while(!q.empty())
+// 	{
+// 		curr = q.front();
+// 		q.pop();
+//     if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && findFrack[curr.x][curr.y+1] < 0)
+// 		{
+// 			Position north;
+// 			north.x = curr.x;
+// 			north.y = curr.y+1;
+// 			q.push(north);
+// 			findFrack[north.x][north.y] = findFrack[curr.x][curr.y] + 1;
+// 		}
+//   	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && findFrack[curr.x+1][curr.y] < 0)
+// 		{
+// 			Position east;
+// 			east.x = curr.x+1;
+// 			east.y = curr.y;
+// 			q.push(east);
+// 			findFrack[east.x][east.y] = findFrack[curr.x][curr.y] + 1;
+// 		}
+//     if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && findFrack[curr.x][curr.y-1] < 0)
+// 		{
+// 			Position south;
+// 			south.x = curr.x;
+// 			south.y = curr.y-1;
+// 			q.push(south);
+// 			findFrack[south.x][south.y] = findFrack[curr.x][curr.y] + 1;
+// 		}
+//     if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && findFrack[curr.x-1][curr.y] < 0)
+// 		{
+// 			Position west;
+// 			west.x = curr.x-1;
+//       west.y = curr.y;
+// 			q.push(west);
+// 			findFrack[west.x][west.y] = findFrack[curr.x][curr.y] + 1;
+// 		}
+// 	}
+// }
+//
+// void StudentWorld::layOutShortestPath()
+// {
+//   for(int i = 0; i < VIEW_WIDTH; i++)
+//   {
+//     for(int j = 0; j < VIEW_HEIGHT; j++)
+//     {
+//       pathToExit[i][j] = -1;
+//     }
+//   }
+// 	queue<Position> q;
+// 	Position curr;
+// 	curr.x = 60;
+// 	curr.y = 60;
+// 	q.push(curr);
+// 	pathToExit[curr.x][curr.y] = 0;
+// 	while(!q.empty())
+// 	{
+// 		curr = q.front();
+// 		q.pop();
+//     if(canMove(curr.x, curr.y, GraphObject::up) && !touchingBoulder(curr.x, curr.y, GraphObject::up, 3, player) && pathToExit[curr.x][curr.y+1] < 0)
+// 		{
+// 			Position north;
+// 			north.x = curr.x;
+// 			north.y = curr.y+1;
+// 			q.push(north);
+// 			pathToExit[north.x][north.y] = pathToExit[curr.x][curr.y] + 1;
+// 		}
+//   	if(canMove(curr.x, curr.y, GraphObject::right) && !touchingBoulder(curr.x, curr.y, GraphObject::right, 3, player) && pathToExit[curr.x+1][curr.y] < 0)
+// 		{
+// 			Position east;
+// 			east.x = curr.x+1;
+// 			east.y = curr.y;
+// 			q.push(east);
+// 			pathToExit[east.x][east.y] = pathToExit[curr.x][curr.y] + 1;
+// 		}
+//     if(canMove(curr.x, curr.y, GraphObject::down) && !touchingBoulder(curr.x, curr.y, GraphObject::down, 3, player) && pathToExit[curr.x][curr.y-1] < 0)
+// 		{
+// 			Position south;
+// 			south.x = curr.x;
+// 			south.y = curr.y-1;
+// 			q.push(south);
+// 			pathToExit[south.x][south.y] = pathToExit[curr.x][curr.y] + 1;
+// 		}
+//     if(canMove(curr.x, curr.y, GraphObject::left) && !touchingBoulder(curr.x, curr.y, GraphObject::left, 3, player) && pathToExit[curr.x-1][curr.y] < 0)
+// 		{
+// 			Position west;
+// 			west.x = curr.x-1;
+//             west.y = curr.y;
+// 			q.push(west);
+// 			pathToExit[west.x][west.y] = pathToExit[curr.x][curr.y] + 1;
+// 		}
+// 	}
+// }
 
 GraphObject::Direction StudentWorld::getShortestDirection(int x, int y, bool hardcore)
 {
-  int shortest = INT_MAX;
-  GraphObject::Direction dir = GraphObject::up;
   if(hardcore)
   {
-    if(y < 60 && findFrack[x][y+1] >= 0)
-  	{
-  		shortest = findFrack[x][y+1];
-      dir = GraphObject::up;
-  	}
-  	if(y > 0 && findFrack[x][y-1] >= 0)
-  	{
-  		if(findFrack[x][y-1] < shortest)
-  		{
-  			shortest = findFrack[x][y-1];
-        dir = GraphObject::down;
-  		}
-  	}
-  	if(x < 60 && findFrack[x+1][y] >= 0)
-  	{
-  			if(findFrack[x+1][y] < shortest)
-  			{
-  				shortest = findFrack[x+1][y];
-          dir = GraphObject::right;
-  			}
-  	}
-  	if(x > 0 && findFrack[x-1][y] >= 0)
-  	{
-  		if(findFrack[x-1][y] < shortest)
-  		{
-  			shortest = findFrack[x-1][y];
-        dir = GraphObject::left;
-  		}
-    }
+    return directionToFrack(x, y);
   }
   else
   {
-    layOutShortestPath();
-    if(y < 60 && pathToExit[x][y+1] >= 0)
+    findShortestPath(60, 60, pathToExit);
+    return directionToExit(x, y);
+  }
+  return GraphObject::none;
+}
+
+GraphObject::Direction StudentWorld::directionToFrack(int x, int y)
+{
+  int shortest = INT_MAX;
+  GraphObject::Direction dir = GraphObject::up;
+  if(y < 60 && findFrack[x][y+1] >= 0)
+  {
+    shortest = findFrack[x][y+1];
+    dir = GraphObject::up;
+  }
+  if(y > 0 && findFrack[x][y-1] >= 0)
+  {
+    if(findFrack[x][y-1] < shortest)
     {
-      shortest = pathToExit[x][y+1];
-      dir = GraphObject::up;
-    }
-    if(y > 0 && pathToExit[x][y-1] >= 0)
-    {
-      if(pathToExit[x][y-1] < shortest)
-      {
-        shortest = pathToExit[x][y-1];
-        dir = GraphObject::down;
-      }
-    }
-    if(x < 60 && pathToExit[x+1][y] >= 0)
-    {
-      if(pathToExit[x+1][y] < shortest)
-      {
-        shortest = pathToExit[x+1][y];
-        dir = GraphObject::right;
-      }
-    }
-    if(x > 0 && pathToExit[x-1][y] >= 0)
-    {
-      if(pathToExit[x-1][y] < shortest)
-      {
-        shortest = pathToExit[x-1][y];
-        dir = GraphObject::left;
-      }
+      shortest = findFrack[x][y-1];
+      dir = GraphObject::down;
     }
   }
-	return dir;
+  if(x < 60 && findFrack[x+1][y] >= 0)
+  {
+    if(findFrack[x+1][y] < shortest)
+    {
+      shortest = findFrack[x+1][y];
+      dir = GraphObject::right;
+    }
+  }
+  if(x > 0 && findFrack[x-1][y] >= 0)
+  {
+    if(findFrack[x-1][y] < shortest)
+    {
+      shortest = findFrack[x-1][y];
+      dir = GraphObject::left;
+    }
+  }
+  return dir;
+}
+
+GraphObject::Direction StudentWorld::directionToExit(int x, int y)
+{
+  int shortest = INT_MAX;
+  GraphObject::Direction dir = GraphObject::up;
+  if(y < 60 && pathToExit[x][y+1] >= 0)
+  {
+    shortest = pathToExit[x][y+1];
+    dir = GraphObject::up;
+  }
+  if(y > 0 && pathToExit[x][y-1] >= 0)
+  {
+    if(pathToExit[x][y-1] < shortest)
+    {
+      shortest = pathToExit[x][y-1];
+      dir = GraphObject::down;
+    }
+  }
+  if(x < 60 && pathToExit[x+1][y] >= 0)
+  {
+    if(pathToExit[x+1][y] < shortest)
+    {
+      shortest = pathToExit[x+1][y];
+      dir = GraphObject::right;
+    }
+  }
+  if(x > 0 && pathToExit[x-1][y] >= 0)
+  {
+    if(pathToExit[x-1][y] < shortest)
+    {
+      shortest = pathToExit[x-1][y];
+      dir = GraphObject::left;
+    }
+  }
+  return dir;
 }
 
 bool StudentWorld::seeFrack(int x, int y, GraphObject::Direction& dir)
@@ -752,7 +815,7 @@ bool StudentWorld::seeFrack(int x, int y, GraphObject::Direction& dir)
 
 int StudentWorld::stepsAwayFromFrack(int x, int y)
 {
-  findShortestToFrack();
+  findShortestPath(getFrackX(), getFrackY(), findFrack);
   return findFrack[x][y];
 }
 // Students:  Add code to this file (if you wish), StudentWorld.h, Actor.h and Actor.cpp

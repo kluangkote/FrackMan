@@ -216,7 +216,7 @@ void Protester::doSomething()
   setRestTicks(max(0, i));
 }
 
-bool Protester::getAnnoyed(int damage)
+void Protester::getAnnoyed(int damage)
 {
   setHealth(getHealth()-damage);
   if(getHealth() <= 0)
@@ -226,7 +226,7 @@ bool Protester::getAnnoyed(int damage)
     setStateToTrue();
     setRestTicks(0);
     if(damage == 100)
-      getWorld()->addPointsToFrack(500);
+      getWorld()->increaseScore(500);
   }
   else
   {
@@ -234,7 +234,6 @@ bool Protester::getAnnoyed(int damage)
     int i = 100-getWorld()->getLevel()*10;
     setRestTicks(max(50, i));
   }
-  return true;
 }
 
 void FrackMan::doSomething()
@@ -400,7 +399,7 @@ void FrackMan::doSomething()
   }
 }
 
-bool FrackMan::getAnnoyed(int damage)
+void FrackMan::getAnnoyed(int damage)
 {
   setHealth(getHealth()-damage);
   if(getHealth() <= 0)
@@ -408,7 +407,6 @@ bool FrackMan::getAnnoyed(int damage)
     getWorld()->playSound(SOUND_PLAYER_GIVE_UP);
     setAlive(false);
   }
-  return true;
 }
 
 void FrackMan::addWater()
@@ -419,11 +417,6 @@ void FrackMan::addWater()
 void FrackMan::addSonar()
 {
   sonar += 2;
-}
-
-void FrackMan::addPoints(int pointsToAdd)
-{
-  points += pointsToAdd;
 }
 
 void FrackMan::addGold()
@@ -440,10 +433,6 @@ int FrackMan::getSonar()
 {
   return sonar;
 }
-int FrackMan::getPoints()
-{
-  return points;
-}
 
 int FrackMan::getGold()
 {
@@ -452,36 +441,34 @@ int FrackMan::getGold()
 
 bool RegularProtester::receiveGold()
 {
-  getWorld()->addPointsToFrack(25);
+  getWorld()->increaseScore(25);
   getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
   setHealth(0);
   setStateToTrue();
   return true;
 }
 
-bool RegularProtester::getAnnoyed(int damage)
+void RegularProtester::getAnnoyed(int damage)
 {
   Protester::getAnnoyed(damage);
   if(getHealth() <= 0 && damage == 2)
-    getWorld()->addPointsToFrack(100);
-  return true;
+    getWorld()->increaseScore(100);
 }
 
 bool HardcoreProtester::receiveGold()
 {
-  getWorld()->addPointsToFrack(50);
+  getWorld()->increaseScore(50);
   getWorld()->playSound(SOUND_PROTESTER_FOUND_GOLD);
   int i = 100-getWorld()->getLevel()*10;
   setRestTicks(max(50, i));
   return true;
 }
 
-bool HardcoreProtester::getAnnoyed(int damage)
+void HardcoreProtester::getAnnoyed(int damage)
 {
   Protester::getAnnoyed(damage);
   if(getHealth() <= 0 && damage == 2)
-    getWorld()->addPointsToFrack(250);
-  return true;
+    getWorld()->increaseScore(250);
 }
 
 bool HardcoreProtester::hardcoreCalculate()
@@ -498,13 +485,13 @@ bool HardcoreProtester::hardcoreCalculate()
   return false;
 }
 
-void Goodie::doSomething(int sound = SOUND_GOT_GOODIE)
+void Goodie::doSomething()
 {
   int frackX = getWorld()->getFrackX();
   int frackY = getWorld()->getFrackY();
   if(getWorld()->getRadius(getX(), getY(), frackX, frackY) <= 3)
   {
-    getWorld()->playSound(sound);
+    getWorld()->playSound(mySound);
     setAlive(false);
   }
 }
@@ -540,23 +527,29 @@ void WaterPool::doSomething()
 {
     PopUpGoodie::doSomething();
     if(!isActorAlive())
+    {
+      getWorld()->increaseScore(100);
       getWorld()->addWaterToGun();
+    }
 }
 
 void SonarKit::doSomething()
 {
   PopUpGoodie::doSomething();
   if(!isActorAlive())
+  {
+    getWorld()->increaseScore(75);
     getWorld()->addSonarKit();
+  }
 }
 
 void OilBarrel::doSomething()
 {
   showSelf();
-  Goodie::doSomething(SOUND_FOUND_OIL);
+  Goodie::doSomething();
   if(!isActorAlive())
   {
-    getWorld()->addPointsToFrack(1000);
+    getWorld()->increaseScore(1000);
     getWorld()->barrelFound();
   }
 }
@@ -569,7 +562,7 @@ void GoldNugget::doSomething()
     Goodie::doSomething();
     if(!isActorAlive())
     {
-      getWorld()->addPointsToFrack(10);
+      getWorld()->increaseScore(10);
       getWorld()->addGold();
     }
   }

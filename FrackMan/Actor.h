@@ -30,9 +30,8 @@ public:
       return;
   }
 
-  virtual bool getAnnoyed(int damage)
+  virtual void getAnnoyed(int damage)
   {
-      return false;
   }
 
   bool isActorAlive()
@@ -87,16 +86,19 @@ private:
 class Goodie : public Actor
 {
 public:
-  Goodie(int imageID, int x, int y, StudentWorld* world)
+  Goodie(int imageID, int x, int y, StudentWorld* world, int sound = SOUND_GOT_GOODIE)
   : Actor(imageID, x, y, world, right, 1, 2)
   {
+    mySound = sound;
   }
 
   virtual ~Goodie()
   {
   }
 
-  void virtual doSomething(int sound);
+  virtual void doSomething();
+private:
+  int mySound;
 };
 
 class PopUpGoodie : public Goodie
@@ -138,11 +140,6 @@ public:
   {
   }
 
-  virtual bool getAnnoyed(int damage)
-  {
-    return false;
-  }
-
   int getHealth()
   {
     return myHealth;
@@ -164,7 +161,6 @@ public:
     water = 5;
     sonar = 1;
     gold = 0;
-    points = 0;
   }
 
   virtual ~FrackMan()
@@ -173,13 +169,11 @@ public:
 
   virtual void doSomething();
 
-  virtual bool getAnnoyed(int damage);
+  virtual void getAnnoyed(int damage);
 
   void addWater();
 
   void addSonar();
-
-  void addPoints(int pointsToAdd);
 
   void addGold();
 
@@ -187,13 +181,10 @@ public:
 
   int getSonar();
 
-  int getPoints();
-
   int getGold();
 private:
   int water;
   int sonar;
-  int points;
   int gold;
 };
 
@@ -215,7 +206,7 @@ public:
 
   bool clearPath(Direction dir);
 
-  virtual bool getAnnoyed(int damage);
+  virtual void getAnnoyed(int damage);
 
   bool getState()
   {
@@ -287,7 +278,7 @@ public:
 
   virtual bool receiveGold();
 
-  virtual bool getAnnoyed(int damage);
+  virtual void getAnnoyed(int damage);
 };
 
 class HardcoreProtester : public Protester
@@ -305,7 +296,7 @@ public:
 
   virtual bool receiveGold();
 
-  virtual bool getAnnoyed(int damage);
+  virtual void getAnnoyed(int damage);
 };
 
 class Boulder : public Actor
@@ -360,7 +351,7 @@ public:
 class Buried : public Goodie
 {
 public:
-  Buried(int imageID, int x, int y, StudentWorld* world) : Goodie(imageID, x, y, world)
+  Buried(int imageID, int x, int y, StudentWorld* world, int sound = SOUND_GOT_GOODIE) : Goodie(imageID, x, y, world, sound)
   {
     setVisible(false);
     setHidden(true);
@@ -381,7 +372,7 @@ public:
 class OilBarrel : public Buried
 {
 public:
-    OilBarrel(int startX, int startY, StudentWorld* world) : Buried(IID_BARREL, startX, startY, world)
+    OilBarrel(int startX, int startY, StudentWorld* world) : Buried(IID_BARREL, startX, startY, world, SOUND_FOUND_OIL)
     {
     }
     virtual ~OilBarrel()
