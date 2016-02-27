@@ -1,8 +1,7 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-Actor::Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir = right, double size = 1.0, unsigned int depth = 0,
-  bool sh = true, bool annoy = false) : GraphObject(imageID, startX, startY, dir, size, depth)
+Actor::Actor(int imageID, int startX, int startY, StudentWorld* world, Direction dir, double size, unsigned int depth, bool sh, bool annoy) : GraphObject(imageID, startX, startY, dir, size, depth)
 {
   myWorld = world;
   setVisible(true);
@@ -65,7 +64,7 @@ bool PopUpGoodie::pickedUp()
   return pickedUpByFrack;
 }
 
-Buried::Buried(int imageID, int x, int y, StudentWorld* world, int sound = SOUND_GOT_GOODIE) : Goodie(imageID, x, y, world, sound)
+Buried::Buried(int imageID, int x, int y, StudentWorld* world, int sound) : Goodie(imageID, x, y, world, sound)
 {
   setVisible(false);
   setHidden(true);
@@ -370,7 +369,7 @@ void Protester::doSomething()
         getWorld()->playSound(SOUND_PROTESTER_YELL);
         getWorld()->annoyFrack(2);
         int i = 3-getWorld()->getLevel()/4;
-        setRestTicks(max(0, i));
+        setRestTicks(max(0, i)*15);
         return;
       }
       else
