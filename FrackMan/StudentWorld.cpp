@@ -261,6 +261,8 @@ void StudentWorld::cleanUp()
 	it = actors.begin();
 	while(it != actors.end())
 	{
+    if((*it)->canGetAnnoyed())
+      numberOfProtesters--;
 		delete *it;
 		it = actors.erase(it);
 	}
